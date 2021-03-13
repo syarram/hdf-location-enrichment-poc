@@ -3,6 +3,7 @@ package com.tef.etl.main
 import com.tef.etl.SparkFuncs.{SparkSessionTrait, SparkUtils}
 import com.tef.etl.SparkFuncs.SparkUtils.{part_dt, part_hour}
 import com.tef.etl.catalogs.HBaseCatalogs
+import com.tef.etl.weblogs.TransactionDFOperations
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{Delete, HTable, Put}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode}
@@ -59,15 +60,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
     val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
     val controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
-
-
     tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
-
-
-
-
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
-      sourceDF.show(100,false)
+    //val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,sourceDF,"WEB")
+    //expandedDF.filter(col("column185").equalTo("satish")).show(100,false)
+    //expandedDF.show(100,false)
+    sourceDF.show(100,false)
+
     //  val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
     //  locationDF.show(10,false)
 
