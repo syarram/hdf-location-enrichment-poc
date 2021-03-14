@@ -1,9 +1,10 @@
 package com.tef.etl.weblogs
 
 import com.tef.etl.definitions.WeblogDef
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.split
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.{col, split, udf}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
 object TransactionDFOperations {
 
@@ -11,7 +12,7 @@ object TransactionDFOperations {
     val colNames = WeblogDef.webColumnNames
     import spark.implicits._
     val df1 = df.withColumn("descArray", split($"nonlkey_cols","\\|"))
-    df1.select(col("descArray") +: (0 until 185)
+    val df2 = df1.select(col("descArray") +: (0 until 185)
       .map(x=>
         x match {
           case 0 => col("descArray")(x).alias("clientport")
@@ -198,7 +199,7 @@ object TransactionDFOperations {
           case 162 => col("descArray")(x).alias("socketunsentsize")
           case 163 => col("descArray")(x).alias("medialogstring")
           case 164 => col("descArray")(x).alias("flag")
-          case 165 => col("descArray")(x).alias("minrtt")
+          case 165 => col("descArray")(x).alias("src_tcpsl")
           case 166 => col("descArray")(x).alias("contenttype")
           //Missing
           case 167 => col("descArray")(x).alias("MSH")
@@ -224,5 +225,53 @@ object TransactionDFOperations {
 
         }
     ):_*).drop("nonlkey_cols").drop("descArray")
+    df2.printSchema()
+    enrichTCPSL(spark, df2)
+  }
+
+
+  def enrichTCPSL(sparkSession: SparkSession, df:DataFrame): DataFrame ={
+
+    val schema = StructType(df.schema.fields ++ Array(
+      StructField("minrtt", StringType, false),
+      StructField("avgrtt", StringType, false),
+      StructField("maxrtt", StringType, false),
+      StructField("bdp", StringType, false),
+      StructField("avgbif", StringType, false),
+      StructField("maxbif", StringType, false),
+      StructField("pktlossrate", StringType, false),
+      StructField("pktretransrate", StringType, false)
+    ))
+
+    val enrichedRows = df.rdd.map({ x=>{
+      val src_tcpsl = x(165).asInstanceOf[String]
+      if(src_tcpsl.length>1){
+        val ary = src_tcpsl.split("/")
+        val ary1 = ary(2).split(" ")
+        val ary2 = ary(3).split(" ")
+        Row.fromSeq(x.toSeq ++
+          Array(ary(0)) ++
+          Array(ary(1)) ++
+          Array(ary1(0))++
+          Array(ary1(1))++
+          Array(ary1(2))++
+          Array(ary2(0))++
+          Array(ary2(1))++
+          Array(ary(4))
+        )
+      }else{
+        Row.fromSeq(x.toSeq ++
+          Array("") ++
+          Array("") ++
+          Array("") ++
+          Array("") ++
+          Array("") ++
+          Array("") ++
+          Array("") ++
+          Array("")
+        )
+      }
+    }})
+    sparkSession.createDataFrame(enrichedRows,schema)
   }
 }

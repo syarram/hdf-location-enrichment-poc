@@ -63,8 +63,8 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
     val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,sourceDF,"WEB")
-    //expandedDF.filter(col("column185").equalTo("satish")).show(100,false)
     expandedDF.show(100,false)
+
     //sourceDF.show(100,false)
 
     //  val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
