@@ -226,52 +226,23 @@ object TransactionDFOperations {
         }
     ):_*).drop("nonlkey_cols").drop("descArray")
     df2.printSchema()
-    enrichTCPSL(spark, df2)
+    val df3 = enrichTCPSL(df2)
+    df3.select("minrtt","avgrtt","maxrtt","bdp","avgbif","maxbif","pktlossrate","pktretransrate").show
+    df3
   }
 
-
-  def enrichTCPSL(sparkSession: SparkSession, df:DataFrame): DataFrame ={
-
-    val schema = StructType(df.schema.fields ++ Array(
-      StructField("minrtt", StringType, false),
-      StructField("avgrtt", StringType, false),
-      StructField("maxrtt", StringType, false),
-      StructField("bdp", StringType, false),
-      StructField("avgbif", StringType, false),
-      StructField("maxbif", StringType, false),
-      StructField("pktlossrate", StringType, false),
-      StructField("pktretransrate", StringType, false)
-    ))
-
-    val enrichedRows = df.rdd.map({ x=>{
-      val src_tcpsl = x(165).asInstanceOf[String]
-      if(src_tcpsl.length>1){
-        val ary = src_tcpsl.split("/")
-        val ary1 = ary(2).split(" ")
-        val ary2 = ary(3).split(" ")
-        Row.fromSeq(x.toSeq ++
-          Array(ary(0)) ++
-          Array(ary(1)) ++
-          Array(ary1(0))++
-          Array(ary1(1))++
-          Array(ary1(2))++
-          Array(ary2(0))++
-          Array(ary2(1))++
-          Array(ary(4))
-        )
-      }else{
-        Row.fromSeq(x.toSeq ++
-          Array("") ++
-          Array("") ++
-          Array("") ++
-          Array("") ++
-          Array("") ++
-          Array("") ++
-          Array("") ++
-          Array("")
-        )
-      }
-    }})
-    sparkSession.createDataFrame(enrichedRows,schema)
+  def enrichTCPSL(df:DataFrame): DataFrame ={
+    df.withColumn("minrtt", split(col("src_tcpsl"),"/")(0))
+      .withColumn("avgrtt", split(col("src_tcpsl"),"/")(1))
+      .withColumn("tmp_1", split(col("src_tcpsl"),"/")(2))
+      .withColumn("tmp_2", split(col("src_tcpsl"),"/")(3))
+      .withColumn("maxrtt", split(col("tmp_1")," ")(0))
+      .withColumn("bdp", split(col("tmp_1")," ")(1))
+      .withColumn("avgbif", split(col("tmp_1")," ")(2))
+      .withColumn("maxbif", split(col("tmp_2")," ")(0))
+      .withColumn("pktlossrate", split(col("tmp_2")," ")(1))
+      .withColumn("pktretransrate", split(col("src_tcpsl"),"/")(4))
+      .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
+
 }
