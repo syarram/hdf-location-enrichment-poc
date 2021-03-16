@@ -1,7 +1,7 @@
 package com.tef.etl.weblogs
 
 import com.tef.etl.definitions.WeblogDef
-import org.apache.spark.sql.functions.{col, split, when}
+import org.apache.spark.sql.functions.{col, hour, minute, second, split, to_date, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
@@ -10,7 +10,7 @@ object TransactionDFOperations {
     val colNames = WeblogDef.webColumnNames
     import spark.implicits._
     val df1 = df.withColumn("descArray", split($"nonlkey_cols","\\|"))
-    val df2 = df1.select(col("descArray") +: (0 until 185)
+    val df2 = df1.select(col("descArray") +: (0 until 186)
       .map(x=>
         x match {
           case 0 => col("descArray")(x).alias("clientport")
@@ -220,6 +220,7 @@ object TransactionDFOperations {
           case 182 => col("descArray")(x).alias("optsource")
           case 183 => col("descArray")(x).alias("predicteduagroup")
           case 184 => col("descArray")(x).alias("sslinfolog")
+          case 185 => col("descArray")(x).alias("src_ts")
 
         }
     ):_*).drop("nonlkey_cols").drop("descArray")
@@ -238,16 +239,16 @@ object TransactionDFOperations {
         .when(col("src_flag").equalTo(31),"NS_MEDIA_TYPE_CT_ABR")
         .when(col("src_flag").equalTo(32),"NS_MEDIA_TYPE_OTHER")
         .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("-"))
+      .withColumn("conttype", split(col("contenttype"),"/")(0))
+      .withColumn("conttype_1", split(col("contenttype"),"/")(1))
+      .withColumn("dmy", to_date(col("src_ts")))
+      .withColumn("hh", hour(col("src_ts")))
+      .withColumn("mm", minute(col("src_ts")))
+      .withColumn("ss", second(col("src_ts")))
 
-    df4.select("optimisedsize","sizetag","src_flag","flag").show
+    df4.select("optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm","ss").show
     df4
-
-
-
-
-
   }
-
   def enrichTCPSL(df:DataFrame): DataFrame ={
     df.withColumn("minrtt", split(col("src_tcpsl"),"/")(0))
       .withColumn("avgrtt", split(col("src_tcpsl"),"/")(1))
@@ -261,7 +262,5 @@ object TransactionDFOperations {
       .withColumn("pktretransrate", split(col("src_tcpsl"),"/")(4))
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
-
-
 
 }
