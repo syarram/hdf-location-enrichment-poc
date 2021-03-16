@@ -1,10 +1,8 @@
 package com.tef.etl.weblogs
 
 import com.tef.etl.definitions.WeblogDef
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, split, udf}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.functions.{col, split, when}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
 
@@ -198,7 +196,7 @@ object TransactionDFOperations {
           case 161 => col("descArray")(x).alias("socketunreadsize")
           case 162 => col("descArray")(x).alias("socketunsentsize")
           case 163 => col("descArray")(x).alias("medialogstring")
-          case 164 => col("descArray")(x).alias("flag")
+          case 164 => col("descArray")(x).alias("src_flag")
           case 165 => col("descArray")(x).alias("src_tcpsl")
           case 166 => col("descArray")(x).alias("contenttype")
           //Missing
@@ -228,7 +226,26 @@ object TransactionDFOperations {
     df2.printSchema()
     val df3 = enrichTCPSL(df2)
     df3.select("minrtt","avgrtt","maxrtt","bdp","avgbif","maxbif","pktlossrate","pktretransrate").show
-    df3
+
+    val df4 = df3.withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
+      .when(col("optimisedsize") >= 1000 && col("optimisedsize") < 200000,"Small")
+    .when(col("optimisedsize") >= 200000 && col("optimisedsize") < 1000000,"Medium")
+    .when(col("optimisedsize") >= 1000000 && col("optimisedsize") < 5000000,"Large")
+    .when(col("optimisedsize") >= 5000000, "Huge").otherwise("-"))
+      .withColumn("flag", when(col("src_flag").equalTo(0),"NS_MEDIA_TYPE_UNCATEGORIZED")
+        .when(col("src_flag").equalTo(29),"NS_MEDIA_TYPE_ENC_ABR")
+        .when(col("src_flag").equalTo(30),"NS_MEDIA_TYPE_CT_PD")
+        .when(col("src_flag").equalTo(31),"NS_MEDIA_TYPE_CT_ABR")
+        .when(col("src_flag").equalTo(32),"NS_MEDIA_TYPE_OTHER")
+        .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("-"))
+
+    df4.select("optimisedsize","sizetag","src_flag","flag").show
+    df4
+
+
+
+
+
   }
 
   def enrichTCPSL(df:DataFrame): DataFrame ={
@@ -244,5 +261,7 @@ object TransactionDFOperations {
       .withColumn("pktretransrate", split(col("src_tcpsl"),"/")(4))
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
+
+
 
 }
