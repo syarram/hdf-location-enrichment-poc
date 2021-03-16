@@ -1,7 +1,7 @@
 package com.tef.etl.weblogs
 
 import com.tef.etl.definitions.WeblogDef
-import org.apache.spark.sql.functions.{col, hour, minute, second, split, to_date, when}
+import org.apache.spark.sql.functions.{col, hour, lit, minute, second, split, to_date, udf, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
@@ -220,7 +220,7 @@ object TransactionDFOperations {
           case 182 => col("descArray")(x).alias("optsource")
           case 183 => col("descArray")(x).alias("predicteduagroup")
           case 184 => col("descArray")(x).alias("sslinfolog")
-          case 185 => col("descArray")(x).alias("src_ts")
+          case 185 => col("descArray")(x).alias("timestamp")
 
         }
     ):_*).drop("nonlkey_cols").drop("descArray")
@@ -245,8 +245,16 @@ object TransactionDFOperations {
       .withColumn("hh", hour(col("src_ts")))
       .withColumn("mm", minute(col("src_ts")))
       .withColumn("ss", second(col("src_ts")))
+      .withColumn("appthroughput",
+        when(col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
+          (col("optimisedsize").divide(col("transactiontime")))*8
+        ).otherwise(""))
+      .withColumn("tcpthroughput", when(col("avgrtt") > 10 ,
+        (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
+      ).otherwise(""))
 
-    df4.select("optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm","ss").show
+    df4.select("optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm","ss",
+      "appthroughput","tcpthroughput").show
     df4
   }
   def enrichTCPSL(df:DataFrame): DataFrame ={
