@@ -13,8 +13,8 @@ object TransactionDFOperations {
     val df2 = df1.select(col("descArray") +: (0 until 186)
       .map(x=>
         x match {
-          case 0 => col("descArray")(x).alias("clientport")
-          case 1 => col("descArray")(x).alias("clientip")
+          case 0 => col("descArray")(x).alias("clientip")
+          case 1 => col("descArray")(x).alias("clientport")
           case 2 => col("descArray")(x).alias("serverlocport")
           case 3 => col("descArray")(x).alias("serverlocalegress")
           case 4 => col("descArray")(x).alias("clientvlanid")
@@ -241,10 +241,11 @@ object TransactionDFOperations {
         .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("-"))
       .withColumn("conttype", split(col("contenttype"),"/")(0))
       .withColumn("conttype_1", split(col("contenttype"),"/")(1))
-      .withColumn("dmy", to_date(col("src_ts")))
-      .withColumn("hh", hour(col("src_ts")))
-      .withColumn("mm", minute(col("src_ts")))
-      .withColumn("ss", second(col("src_ts")))
+      .withColumn("dmy", to_date(col("timestamp")))
+      .withColumn("hh", hour(col("timestamp")))
+      .withColumn("mm", minute(col("timestamp")))
+      .withColumn("ss", second(col("timestamp")))
+      .withColumn("ms",split(col("timestamp"),"\\.")(1))
       .withColumn("appthroughput",
         when(col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
           (col("optimisedsize").divide(col("transactiontime")))*8
@@ -252,11 +253,9 @@ object TransactionDFOperations {
       .withColumn("tcpthroughput", when(col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
-
-    df4.select("optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm","ss",
-      "appthroughput","tcpthroughput").show
     df4
   }
+
   def enrichTCPSL(df:DataFrame): DataFrame ={
     df.withColumn("minrtt", split(col("src_tcpsl"),"/")(0))
       .withColumn("avgrtt", split(col("src_tcpsl"),"/")(1))
@@ -269,6 +268,14 @@ object TransactionDFOperations {
       .withColumn("pktlossrate", split(col("tmp_2")," ")(1))
       .withColumn("pktretransrate", split(col("src_tcpsl"),"/")(4))
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
+  }
+
+  def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").drop("ip","apn-name","csp","network")
+  }
+
+  def readParquet(spark:SparkSession,path:String):DataFrame ={
+    spark.read.parquet(path)
   }
 
 }

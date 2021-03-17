@@ -63,7 +63,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
     val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,sourceDF,"WEB")
-    expandedDF.show(100,false)
+
+    val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
+    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
+    cspDF.show()
+    val plusAPNDF= TransactionDFOperations.enrichAPNID(expandedDF,cspDF)
+    plusAPNDF.select("clientip","optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm",
+      "ss","ms","appthroughput","tcpthroughput","apnid").show
 
     //sourceDF.show(100,false)
 
