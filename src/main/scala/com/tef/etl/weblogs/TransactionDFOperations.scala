@@ -1,13 +1,11 @@
 package com.tef.etl.weblogs
 
-import com.tef.etl.definitions.WeblogDef
 import org.apache.spark.sql.functions.{col, hour, lit, minute, second, split, to_date, udf, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
 
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
-    val colNames = WeblogDef.webColumnNames
     import spark.implicits._
     val df1 = df.withColumn("descArray", split($"nonlkey_cols","\\|"))
     val df2 = df1.select(col("descArray") +: (0 until 186)
@@ -274,8 +272,20 @@ object TransactionDFOperations {
     df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").drop("ip","apn-name","csp","network")
   }
 
-  def readParquet(spark:SparkSession,path:String):DataFrame ={
-    spark.read.parquet(path)
+  def enrichMagnet(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    val ldf = lookupDF.select("lkey",
+      "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
+      "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
+      "azimuth","enodeb_id","tac","ura")
+    df.join(lookupDF,df("lkey")===ldf("lkey"),"left").drop(ldf("lkey"))
   }
+
+  def enrichDiviceDB(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    val ldf = lookupDF.select("imsi","imeisv","marketing_name","brand_name","model_name",
+      "operating_system","device_type","offering")
+    df.join(lookupDF,df("emsisdn")===ldf("emsisdn"),"left").drop(ldf("emsisdn"))
+  }
+
+
 
 }

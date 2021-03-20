@@ -3,7 +3,10 @@ package com.tef.etl.main
 import com.tef.etl.SparkFuncs.{SparkSessionTrait, SparkUtils}
 import com.tef.etl.SparkFuncs.SparkUtils.{part_dt, part_hour}
 import com.tef.etl.catalogs.HBaseCatalogs
-import com.tef.etl.weblogs.TransactionDFOperations
+import com.tef.etl.model.Definitions
+import com.tef.etl.weblogs.{TransactionDFOperations, Utils}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{Delete, HTable, Put}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode}
@@ -12,6 +15,9 @@ import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.net.URI
+
 
 
 //import org.apache.hadoop.hbase.client.TableDescriptor
@@ -53,6 +59,22 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     import spark.implicits._
     spark.sparkContext.setLogLevel(errorLogging)
 
+    val conf:Configuration = spark.sparkContext.hadoopConfiguration
+    val fs = FileSystem.get(conf)
+    val magnetPartition = Utils.getLastPartition(fs,
+      "hdfs://localhost:9000/data/Magnet/dt=","20210319")
+    println(s"*************************************************************************************",
+      magnetPartition
+    )
+    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
+    magnetDF.show(10)
+
+    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210318/","\t",Definitions.magnetSchema)
+    deviceDBDF.show(10)
+
+
+
+/* $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
     // Delete records from source Table if the previous run didnt finish successfully
     val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
@@ -68,8 +90,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
     cspDF.show()
     val plusAPNDF= TransactionDFOperations.enrichAPNID(expandedDF,cspDF)
+
+
+
     plusAPNDF.select("clientip","optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm",
       "ss","ms","appthroughput","tcpthroughput","apnid").show
+
+
 
     //sourceDF.show(100,false)
 
@@ -179,6 +206,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
   //    Thread.sleep(1000000)
 
 //--    println("**************************** SourceCount: "+  sourceDF.count()  +", Filtered Table Count: "+ sourceTSFiltered.count+", **** SourceWithLkey: "+ sourceDFWithLkey.count() +", **** SourceWithOutLkey: "+ sourceDFWithoutLkey.count() +", Control Table Count: "+webIpfrEnrichControlDF.count+", ************webBothDFs count: "+webBothDFs.count()+", streamProccessedTimeVal: "+"1597494981231")
+    */
     spark.close()
   }
 
