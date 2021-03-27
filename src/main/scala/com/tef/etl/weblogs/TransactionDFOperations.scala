@@ -1,6 +1,7 @@
 package com.tef.etl.weblogs
 
-import org.apache.spark.sql.functions.{col, hour, lit, minute, second, split, to_date, udf, when}
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{col, concat, hour, lit, minute, rank, row_number, second, split, to_date, udf, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
@@ -277,15 +278,20 @@ object TransactionDFOperations {
       "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
       "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
       "azimuth","enodeb_id","tac","ura")
-    df.join(lookupDF,df("lkey")===ldf("lkey"),"left").drop(ldf("lkey"))
+    df.join(ldf,df("lkey_web")===ldf("lkey"),"left").drop(ldf("lkey"))
   }
 
   def enrichDiviceDB(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    val ldf = lookupDF.select("imsi","imeisv","marketing_name","brand_name","model_name",
-      "operating_system","device_type","offering")
-    df.join(lookupDF,df("emsisdn")===ldf("emsisdn"),"left").drop(ldf("emsisdn"))
+    val ldf = lookupDF.select("emsisdn","imsi","imei","marketing_name","brand_name","model_name",
+      "operating_system","device_type","tariff_offering_id")
+    df.join(ldf,df("userid_web")===ldf("emsisdn"),"left").drop(ldf("emsisdn"))
   }
 
-
+  def enrichRadius(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    val sDF = lookupDF.withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
+    val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
+    val rSDF = sDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
+    df.join(rSDF,df("sessionid")===rSDF("sesID"),"left").drop("rank","rkey","sesID")
+  }
 
 }

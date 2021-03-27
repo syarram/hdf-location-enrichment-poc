@@ -62,41 +62,39 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val conf:Configuration = spark.sparkContext.hadoopConfiguration
     val fs = FileSystem.get(conf)
     val magnetPartition = Utils.getLastPartition(fs,
-      "hdfs://localhost:9000/data/Magnet/dt=","20210319")
+      "hdfs://localhost:9000/data/Magnet/dt=","20210325")
     println(s"*************************************************************************************",
       magnetPartition
     )
-    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
-    magnetDF.show(10)
-
-    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210318/","\t",Definitions.magnetSchema)
-    deviceDBDF.show(10)
-
-
-
-/* $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
     // Delete records from source Table if the previous run didnt finish successfully
-    val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
-    val stageKeys = SparkUtils.reader(format, transactionKeys)(spark)
-    val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
-    val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
-    val controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
-    tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
-    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
-    val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,sourceDF,"WEB")
+    //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
+    //val stageKeys = SparkUtils.reader(format, transactionKeys)(spark)
+    //val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
 
+    // controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
+    //tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
+    val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
+    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
+    sourceDF.show(5, false)
+    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
+    val withMagnetDF = TransactionDFOperations.enrichMagnet(sourceDF,magnetDF)
+    withMagnetDF.show(5,false)
+    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
+      "\t",Definitions.deviceDBSchema)
+    val withDeviceDBDF = TransactionDFOperations.enrichDiviceDB(withMagnetDF,deviceDBDF)
+    withDeviceDBDF.show(5,false)
+
+    val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,withDeviceDBDF,"WEB")
     val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
-    cspDF.show()
+    cspDF.show(5,false)
     val plusAPNDF= TransactionDFOperations.enrichAPNID(expandedDF,cspDF)
 
-
-
-    plusAPNDF.select("clientip","optimisedsize","sizetag","src_flag","flag","conttype","conttype_1","dmy","hh","mm",
-      "ss","ms","appthroughput","tcpthroughput","apnid").show
-
-
+    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("stage_radius")
+    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
+    val radiusDF = TransactionDFOperations.enrichRadius(plusAPNDF,radiusSRCDF)
+    radiusDF.show(5,false)
 
     //sourceDF.show(100,false)
 
@@ -113,10 +111,8 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .mode(SaveMode.Overwrite)
       .save(hdfsPath)
 
-
-
     val onlyKeys = sourceDF//.limit(2000000)
-    val conf = HBaseConfiguration.create()
+    //val conf = HBaseConfiguration.create()
     val hbaseContext = new HBaseContext(spark.sparkContext, conf)
     val webBothDFsRDD = onlyKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
   //  hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord => new Delete(deleteRecord),deleteBatchSize)
@@ -206,7 +202,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
   //    Thread.sleep(1000000)
 
 //--    println("**************************** SourceCount: "+  sourceDF.count()  +", Filtered Table Count: "+ sourceTSFiltered.count+", **** SourceWithLkey: "+ sourceDFWithLkey.count() +", **** SourceWithOutLkey: "+ sourceDFWithoutLkey.count() +", Control Table Count: "+webIpfrEnrichControlDF.count+", ************webBothDFs count: "+webBothDFs.count()+", streamProccessedTimeVal: "+"1597494981231")
-    */
     spark.close()
   }
 

@@ -14,7 +14,7 @@ object Utils {
   def readLZO(spark:SparkSession,path:String,delimiter:String,schema:StructType):DataFrame={
     spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", "com.hadoop.compression.lzo.LzopCodec")
     spark.read.format("csv")
-      .option("delimiter","\t")
+      .option("delimiter",delimiter)
       .schema(schema)
       .load(path)
   }

@@ -30,55 +30,55 @@ spark-submit --jars /Users/yarrams1/.m2/repository/com/hortonworks/shc-core/1.1.
 export SPARK_HOME=/Users/yarrams1/software/spark-2.3.0-bin-hadoop2.7
 ========DEV Sample records insert. 26/2/2021
 
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfLKey:lkey', 'Unknown'
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911',
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfLKey:lkey', '21008-20699'
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:loc', 'GLB1'
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911',
 'cfNonLKey:nonlkey_cols', '10.162.106.182|52140|0|0|410|82.132.254
 .1|8080|0|0|1514|0|0|0|0|0:0|0|0|0|0|0|0|0|0
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|CONNECT|12603.lsapp.eu:443|12603.lsapp.eu:443||20005|2|1|0|0|0|-|1|0|8|0|1|0|1356|172.25.112.180|-|0|361133853|vs-wap2_5|1600061693|-|o2-nstcp-nile|-|0|0|0|0|v12|-|1289|0|0/0|0|3172345|0|0|NONE|0|0|0|-|-|62/80/122 483 526/1760 0.0/0.0|-|D2lmNzMKqyySxYK3mqobiwFQZgdkBMjf6DU7QQQdPVM=|netscaler11.com;1597957883;11272003;65535;3060441610:|-|okhttp/3.12.5|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-07-07 07:07:07.777777'
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:partitionNum', '40'
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:srcTimeStamp', '1600070697730'
-put 'stage_weblogs','+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:userId', '+6yacwecNxljKAtvBAG2aJ6Qh1lQw2r2C4IcejaxwJA='
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:partitionNum', '40'
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:srcTimeStamp', '1600070697730'
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df726175e2515-cd31-4ace-a75f-215db99a5911', 'cfNonLKey:userId', '+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8='
 
 
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfLKey:lkey', 'Unknown'
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5',
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfLKey:lkey', '21032-40759'
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:loc', 'GLB1'
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5',
 'cfNonLKey:nonlkey_cols', '10.139.239.180|57553|0|0|410|93.184.220
 .29|80|0|0|4000|0|0|0|0|0:0|0|0|0|0|0|0|0|0
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|ocsp.digicert.com|/MFYwVKADAgEAME0wSzBJMAkGBSsOAwIaBQAEFN%2BqEuMosQlBk%2BKfQoLOR0BClVijBBSxPsNpA%2Fi%2FRwHUmCYaCALvY2QrwwIQCBFAVkurzpTL7gkKKGj0nQ%3D%3D||20006|3|1|0|0|0|-|1|1|8|0|1|0|1356|172.25.112.180|-|8|360278879|vs-http|1600067146|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|40|0|0/0|0|18912345|0|0|NONE|0|0|0|-|-|44/44/44 133 149/149 0.0/0.0|-|0tBcFrIWq1EGgqD9Q6KOWmsl+dRI4bfZYLCWgIlbjDY=|netscaler11.com;1597957883;11312402;65535;3035597578:|-|com.apple.trustd/2.0|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-06-06 06:06:06.666666'
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:partitionNum', '10'
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:srcTimeStamp', '1600070697730'
-put 'stage_weblogs','+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:userId', '+KOjhfpjyYzwM0NDYqvUkkL2R61mO6jTChS3udfvgS8='
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:partitionNum', '10'
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:srcTimeStamp', '1600070697730'
+put 'stage_weblogs','++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0=_df424484a2441-7a1b-46ec-8f94-5f05946d7da5', 'cfNonLKey:userId', '++5svuax9r1ekqb3hDIZvyiircyABwbJtaXqPvUXGD0='
 
 
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfLKey:lkey', 'Unknown'
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec',
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfLKey:lkey', '21032-30759'
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:loc', 'GLB1'
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec',
 'cfNonLKey:nonlkey_cols', '10.70.43.246|39963|0|0|410|82.132.175.20|443|0|420|6123|0|0|0|0|0:0|0|0|0|0|0|0|56|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|432523|-|-|-|t|0|0|0|0.0|0|84|83174|0|1600070507|NONE|video.fgla2-1.fna.fbcdn.net|-||-|-|-|-|-|-|-|0|0|0|0|0|0|0|172.25.112.152|-|4|43|-|1599986103|1600070547557|-|-|-|-|-|-|v12|-|84|0|0/0|0|83174|0|0|NONE|0|0|0|-|29|-|-|rz5wIcJogpcUV8fxFn49ugfPvzvWaQXnpoyOmn85z00=|netscaler1.com;1593463031;29972370;65535;4130031114:|-|-|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-08-06 05:20:15.666990'
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:partitionNum', '10'
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:srcTimeStamp', '1600070596621'
-put 'stage_weblogs','zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:userId', 'zyRBlp53rWfEHmCWBxyF8iRPc9OZlKntqMlagIVz/Bs='
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:partitionNum', '10'
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:srcTimeStamp', '1600070596621'
+put 'stage_weblogs','++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak=_df942d8467c03-7e4f-4953-8195-c0922e8f7bec', 'cfNonLKey:userId', '++7TE8m/f0cR9ytw9akXdyc8mFxjis5tu3FEhC/Y2ak='
 
 
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfLKey:lkey', 'Unknown'
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3',
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfLKey:lkey', '21032-10759'
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:loc', 'GLB1'
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3',
 'cfNonLKey:nonlkey_cols', '10.4.13.112|56915|0|0|410|195.188.194.162|80|0|0|5400|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|www.falkirk.gov.uk|/site-data/img/logos/fc_logotype.png||20013|13|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.163|-|5|621030142|vs-http|1600031655|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|40|468|0/0|0|58598765|0|0|NONE|301|0|0|-|-|s|text/html;charset=UTF-8|zXdYVlFczW0q87oSDGcJMK1m8ka7GNRLAlORoiJgyqE=|netscaler5.com;1596179386;19258498;65535;1879901194:|-|Mozilla/5.0 (iPhone; CPU iPhone OS 13_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-11-10 09:14:30.666990'
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:partitionNum', '30'
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:srcTimeStamp', '1600070697730'
-put 'stage_weblogs','d0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:userId', 'd0ssmpObtyt2I8tidq/EWMTo8LkNOV/uxeSEclcHk3Y='
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:partitionNum', '30'
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:srcTimeStamp', '1600070697730'
+put 'stage_weblogs','++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8=_df53157ff28c6-be55-463c-aebf-60949fd2bfe3', 'cfNonLKey:userId', '++AUh4BY7NykwZp2f1Tw8FInKXV2NgM/UdMWm7+SNT8='
 
 
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfLKey:lkey', 'Unknown'
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1',
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfLKey:lkey', '10001-21106'
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:loc', 'GLB1'
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1',
 'cfNonLKey:nonlkey_cols', '10.65.80.83|54055|0|0|410|23.62.2
 .73|80|0|0|12|0|0|0|0|0:0|0|0|0|0|0|0|0|0
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|2.tlu.dl.delivery.mp.microsoft.com|/filestreamingservice/files/962dc51f-100a-42a7-9e62-710472b84d01|P1=1600073314&P2=402&P3=2&P4=bbXRiwRdsCUJ7AWPQflse1Olrnwm6PCUHgV%2bOeTjg4OMy%2frQttsTIRGOjf%2b0BAI9JBih0353ocD7kdvQc2g%2fKQ%3d%3d|20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.163|-|8|621993335|vs-http|1600024296|-|o2-nstcp-nile-no-DRB|2g|0|7|0|0|v12|-|962|555|0/0|0|136203|0|0|NONE|206|0|0|-|-|39/67/97 76326 77879/114455 0.0/0.0|application/octet-stream|B3NQ325eKpJBRJqLYtVmJvjyov4NAS/Lba5l7RyijcQ=|netscaler5.com;1596179386;19223503;65535;1397768458:|-|Microsoft-Delivery-Optimization/10.0|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-10-15 14:14:49.666990'
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:partitionNum', '10'
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:srcTimeStamp', '1600070695088'
-put 'stage_weblogs','tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:userId', 'tHWGtCJnK0JTKFVmrnF8bjhwlPj88mxl+YNpk/CpuuU='
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:partitionNum', '10'
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:srcTimeStamp', '1600070695088'
+put 'stage_weblogs','++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY=_df7398dc28885-0158-4df8-bcc3-34e22d51c2a1', 'cfNonLKey:userId', '++GGHoGeW9taZ7hyup3sl112AqPmsrF0NpgNIiuJFQY='
 
 
 

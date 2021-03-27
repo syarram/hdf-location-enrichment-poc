@@ -21,6 +21,21 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
+  def stageRadiusCatalog(table_name: String) =s"""{
+    "table":{"namespace":"default", "name":${table_name}},
+    "rowkey":"key",
+    "columns":{
+      "rkey":{"cf":"rowkey", "col":"key", "type":"string"},
+      "ts":{"cf":"cfRadius", "col":"TS", "type":"string"},
+      "cc":{"cf":"cfRadius", "col":"CC", "type":"string"},
+      "avpcustom1":{"cf":"cfRadius", "col":"AVP1", "type":"string"},
+      "avpcustom2":{"cf":"cfRadius", "col":"AVP2", "type":"string"},
+      "avpcustom3":{"cf":"cfRadius", "col":"AVP3", "type":"string"},
+      "avpcustom4":{"cf":"cfRadius", "col":"AVP4", "type":"string"},
+      "avpcustom5":{"cf":"cfRadius", "col":"AVP5", "type":"string"}
+    }
+  }""".stripMargin
+
   def cspCatalog(table_name:String): String = s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
