@@ -91,10 +91,10 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     cspDF.show(5,false)
     val plusAPNDF= TransactionDFOperations.enrichAPNID(expandedDF,cspDF)
 
-    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("stage_radius")
+    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
     val radiusDF = TransactionDFOperations.enrichRadius(plusAPNDF,radiusSRCDF)
-    radiusDF.show(5,false)
+    radiusDF.show(1,false)
 
     //sourceDF.show(100,false)
 
