@@ -77,15 +77,18 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
     sourceDF.show(5, false)
+
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
     val withMagnetDF = TransactionDFOperations.enrichMagnet(sourceDF,magnetDF)
     withMagnetDF.show(5,false)
+
     val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
       "\t",Definitions.deviceDBSchema)
     val withDeviceDBDF = TransactionDFOperations.enrichDiviceDB(withMagnetDF,deviceDBDF)
     withDeviceDBDF.show(5,false)
 
     val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,withDeviceDBDF,"WEB")
+
     val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
     cspDF.show(5,false)
@@ -95,6 +98,12 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
     val radiusDF = TransactionDFOperations.enrichRadius(plusAPNDF,radiusSRCDF)
     radiusDF.show(1,false)
+
+    radiusDF.write.partitionBy("dmy","hh","loc","csp")
+      .option("codec","com.hadoop.compression.lzo.LzopCodec")
+      .option("delimiter","\t")
+      .csv("/data/web")
+
 
     //sourceDF.show(100,false)
 
