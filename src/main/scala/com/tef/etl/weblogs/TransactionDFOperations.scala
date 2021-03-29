@@ -241,7 +241,8 @@ object TransactionDFOperations {
   }
 
   def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").drop("ip","apn-name","csp","network")
+    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").drop(lookupDF("ip")).drop(lookupDF("apn-name"))
+      .drop(lookupDF("csp")).drop(lookupDF("network"))
   }
 
   def enrichMagnet(df:DataFrame, lookupDF:DataFrame):DataFrame={

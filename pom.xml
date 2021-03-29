@@ -7,6 +7,7 @@
         <scala.version>2.11.8</scala.version>
         <scala.compact.version>2.11</scala.compact.version>
         <spark.version>2.4.0</spark.version>
+        <jvm.options>-Xmx1024M</jvm.options>
     </properties>
 
     <repositories>
@@ -146,6 +147,11 @@
                     <args>
                         <arg>-target:jvm-1.8</arg>
                     </args>
+                    <jvmArgs>
+                        <jvmArg>-Xss4m</jvmArg>
+                        <jvmArg>-Xms512m</jvmArg>
+                        <jvmArg>-Xmx1024m</jvmArg>
+                    </jvmArgs>
                 </configuration>
             </plugin>
             <plugin>
