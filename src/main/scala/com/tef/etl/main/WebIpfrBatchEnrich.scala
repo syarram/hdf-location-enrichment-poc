@@ -78,8 +78,15 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
     sourceDF.show(5, false)
 
+    val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
+    val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
+    locationDF.show(5,false)
+    val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
+    withMMEDF.show(5, false)
+
+
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
-    val withMagnetDF = TransactionDFOperations.enrichMagnet(sourceDF,magnetDF)
+    val withMagnetDF = TransactionDFOperations.enrichMagnet(withMMEDF,magnetDF)
     withMagnetDF.show(5,false)
 
     val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
@@ -102,6 +109,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     radiusDF.write.partitionBy("dmy","hh","loc","csp")
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
+      .mode(SaveMode.Overwrite)
       .csv("/data/web")
 
 
@@ -112,13 +120,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     //example output live file
     // /data/web/dt=20210303/hour=22/loc=CRX1/csp=O2/FlumeData_10.42.146.255.1614812755448.lzo
-    sourceDF.repartition(hdfsPartitions)
+    /*sourceDF.repartition(hdfsPartitions)
       .write
       .format(hdfsFormat)    // ***Issue here.....working fine for parquet
       .option("compression", compressionFormat)
       //    .mode(SaveMode.Append)
       .mode(SaveMode.Overwrite)
-      .save(hdfsPath)
+      .save(hdfsPath)*/
 
     val onlyKeys = sourceDF//.limit(2000000)
     //val conf = HBaseConfiguration.create()

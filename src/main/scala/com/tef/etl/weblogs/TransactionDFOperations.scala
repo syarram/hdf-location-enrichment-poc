@@ -6,6 +6,10 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
 
+  def enrichMME(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    df.join(lookupDF,df("userid_web")===lookupDF("userid_mme"),"left").drop(lookupDF("userid_mme"))
+  }
+
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
     import spark.implicits._
     val df1 = df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
@@ -250,7 +254,7 @@ object TransactionDFOperations {
       "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
       "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
       "azimuth","enodeb_id","tac","ura")
-    df.join(ldf,df("lkey_web")===ldf("lkey"),"left").drop(ldf("lkey"))
+    df.join(ldf,df("lkey_mme")===ldf("lkey"),"left").drop("lkey")
   }
 
   def enrichDiviceDB(df:DataFrame, lookupDF:DataFrame):DataFrame={
