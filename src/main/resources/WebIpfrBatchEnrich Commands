@@ -11,25 +11,7 @@ hdfs dfs -put Downloads/DeviceDB-part-00018-7c4e3216-c6ba-4c67-b28f-6521b2f6ca89
 create 'stage_weblogs','cfNonLKey','cfLKey'
 create 'csp_apn_lkp','cfcspapn'
 
-put 'csp_apn_lkp','10.4.13.112', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
-put 'csp_apn_lkp','10.4.13.112', 'cfcspapn:APNName', 'Idata'
-put 'csp_apn_lkp','10.4.13.112', 'cfcspapn:CSP', 'o2'
-put 'csp_apn_lkp','10.4.13.112', 'cfcspapn:Network', '10.0.0.0/10'
 
-put 'csp_apn_lkp','10.70.43.246', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
-put 'csp_apn_lkp','10.70.43.246', 'cfcspapn:APNName', 'Idata'
-put 'csp_apn_lkp','10.70.43.246', 'cfcspapn:CSP', 'o2'
-put 'csp_apn_lkp','10.70.43.246', 'cfcspapn:Network', '10.0.0.0/10'
-
-put 'csp_apn_lkp','10.0.0.36', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
-put 'csp_apn_lkp','10.0.0.36', 'cfcspapn:APNName', 'Idata'
-put 'csp_apn_lkp','10.0.0.36', 'cfcspapn:CSP', 'o2'
-put 'csp_apn_lkp','10.0.0.36', 'cfcspapn:Network', '10.0.0.0/10'
-
-put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
-put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:APNName', 'Idata'
-put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:CSP', 'o2'
-put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:Network', '10.0.0.0/10'
 
 
 DEV=============

@@ -12,8 +12,8 @@ object TransactionDFOperations {
 
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
     import spark.implicits._
-    val df1 = df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
-      .withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
+    val df1 = //df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
+      df.withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
       .withColumn("serverlocport",split(col("nonlkey_cols"),"\\|").getItem(2))
       .withColumn("serverlocalegress",split(col("nonlkey_cols"),"\\|").getItem(3))
       .withColumn("clientvlanid",split(col("nonlkey_cols"),"\\|").getItem(4))
@@ -180,7 +180,7 @@ object TransactionDFOperations {
    .withColumn("src_tcpsl",split(col("nonlkey_cols"),"\\|").getItem(165))
    .withColumn("contenttype",split(col("nonlkey_cols"),"\\|").getItem(166))
    .withColumn("MSH",split(col("nonlkey_cols"),"\\|").getItem(167))
-   .withColumn("sessionid",split(col("nonlkey_cols"),"\\|").getItem(168))
+   //.withColumn("sessionid",split(col("nonlkey_cols"),"\\|").getItem(168))
    .withColumn("susbcriberid",split(col("nonlkey_cols"),"\\|").getItem(169))
    .withColumn("useragent",split(col("nonlkey_cols"),"\\|").getItem(170))
    .withColumn("deviceid",split(col("nonlkey_cols"),"\\|").getItem(171))
@@ -245,8 +245,8 @@ object TransactionDFOperations {
   }
 
   def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").drop(lookupDF("ip")).drop(lookupDF("apn-name"))
-      .drop(lookupDF("csp")).drop(lookupDF("network"))
+    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").
+      drop("ip","apn-name","network")
   }
 
   def enrichMagnet(df:DataFrame, lookupDF:DataFrame):DataFrame={

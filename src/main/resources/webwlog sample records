@@ -1,82 +1,213 @@
 
 create 'stage_weblogs','cfNonLKey','cfLKey'
-
+create 'csp_apn_lkp','cfcspapn'
+create 'stage_radius', {NAME=> 'cfRadius', COMPRESSION=> 'SNAPPY'}
 
 =========1
-
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:nonlkey_cols', '10.66.173.214|47730|0|0|410|62.149.0.36|80|0|0|0|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|ads19.vertamedia.com|/vast/|adid=13347ACF6C900E56&aid=560534&cmpId=471503&cb=386335976|20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947709870|vs-http|1600034527|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|540|575|0/0|0|889|0|0|NONE|302|0|0|-|-|30/30/30 845 849/849 0.0/0.0|-|ZodnnOuQYw7ApgRYRMjFvG898bNjeRZGRvp1Dq/6sss=|netscaler1.com;1593463031;30283195;65535;3601678858:|-|Mozilla/5.0 (Linux; Android 10; SM-A405FN Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.81 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:44:59.905735'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:partitionNum', '26'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:srcTimeStamp', '1600073099905'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:userId', 'HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I='
-=========2
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30283195;65535;3601678858:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.66.173.214'
 
+=========2
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfNonLKey:nonlkey_cols', '10.0.177.104|58771|0|0|410|54.182.171.117|80|0|420|410|0|0|0|0|0:0|0|0|0|0|0|0|245|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|375529|-|-|-|t|0|0|0|0.0|0|349|446269|0|1600070953|NONE|0|-||-|-|-|-|-|-|-|0|0|0|0|0|0|0|172.25.112.152|-|3|947709884|-|1600012436|1600073099900|-|-|-|-|-|-|v12|-|349|0|0/0|0|446269|0|0|NONE|0|0|0|-|31|-|-|1MDUZscU+CX2MpP9SIsQWDr0LcByhiFves7rfRN4EuA=|netscaler1.com;1593463031;30164164;65535;1756430346:|-|-|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:00.310738'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfNonLKey:partitionNum', '70'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfNonLKey:srcTimeStamp', '1600073100310'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14800f47f85-146c-43d2-8204-cd777ed82146', 'cfNonLKey:userId', '0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI='
----3
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30164164;65535;1756430346:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.0.177.104'
+
+=========3
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfLKey:lkey', 'NoMatch'
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfNonLKey:nonlkey_cols', '1615989887818, value=10.8.2.225|51767|0|0|410|173.194.183.201|443|0|420|555|0|0|0|0|0:0|0|0|0|0|0|0|541|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|9306|-|-|-|t|0|0|0|0.0|0|1077|3153|0|1600073100|NONE|r4---sn-aigl6nl7.googlevideo.com|-||-|-|-|-|-|-|-|0|0|0|0|0|0|0|172.25.112.152|-|3|2|-|1600001767|1600073100007|-|-|-|-|-|-|v12|-|1077|0|0/0|0|3153|0|0|NONE|0|0|0|-|0|-|-|PUnVXjY28oc7YfkARy8kUoXXu6GwCyHmtBTKEPkWFuo=|netscaler1.com;1593463031;30084879;65535;3775006730:|-|-|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:00.632737'
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfNonLKey:partitionNum', '87'
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfNonLKey:srcTimeStamp', '1600073100632'
 put 'stage_weblogs','8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E=_df148c1a89bd5-617c-45bd-b1b0-9c21c5e4aa13', 'cfNonLKey:userId', '8eru5gh0LLUifYoYAfIJ5+j+ODt5uWJNbnmctoOVz0E='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30084879;65535;3775006730:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.8.2.225'
 
------4
-
+=========4
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfLKey:lkey', 'NoMatch'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfNonLKey:nonlkey_cols', '10.0.177.104|58771|0|0|410|54.182.171.117|80|0|0|0|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|d7c0vsu6v5lxu.cloudfront.net|/dd79/457e/2305/4295-8491-987e5846c2d0/45ed2dc3-b6e1-4c9c-b22c-f226cd7d19d6_a4.aac/range/36797242-36879172|amznDtid=AK6OCP5ZLUJI1|20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947710177|vs-http|1600012436|-|o2-nstcp-nile-no-DRB|2g|0|7|0|0|v12|-|1068|462|0/0|0|85157|0|0|NONE|200|0|0|-|-|43/75/100 33599 36795/82637 0.0/0.0|audio/aac|1MDUZscU+CX2MpP9SIsQWDr0LcByhiFves7rfRN4EuA=|netscaler1.com;1593463031;30164164;65535;1756430346:|-|Prime%20Video/8.140.5805.4 CFNetwork/1128.0.1 Darwin/19.6.0|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:01.418740'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfNonLKey:partitionNum', '70'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfNonLKey:srcTimeStamp', '1600073101418'
 put 'stage_weblogs','0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI=_df14843b442f0-953d-45fe-9f02-33b4f707369f', 'cfNonLKey:userId', '0Kv41+J+/cyR5ML1K7lm1KpeXMq/6cNwNsdbrCB9FZI='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30164164;65535;1756430346:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.0.177.104'
 
--------5
-
+=========5
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfNonLKey:nonlkey_cols', '10.68.240.65|43510|0|0|410|52.0.211.250|80|0|0|87|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|m2m1.inner-active.mobi|/simpleM2M/vastTag|aid=693664&v=Sm2m-2.2.0&aaid=1cd8931d-f0aa-4fff-b518-407c309e7e77&dnt=0&lg=,&bid=com.link.messages.sms&appName=Messenger%20for%20SMS&nt=&videoheight=250&videowidth=300|2301|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947709640|vs-http|1600070780|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|631|705|0/0|0|486|0|0|NONE|204|0|0|-|-|1314/1314/1314 0 446/446 0.0/0.0|-|XWcy5eUj0JIjQWUBrZnMqrve4gRjdPq7zlglm2tRhgg=|netscaler1.com;1593463031;30423823;65535;1106265098:|-|Mozilla/5.0 (Linux; Android 10; SM-G973F Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.81 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:44:58.759732'
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfNonLKey:partitionNum', '7'
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfNonLKey:srcTimeStamp', '1600073098759'
 put 'stage_weblogs','H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE=_df14800361eb3-dbaa-485a-9e7d-12ff3e53953f', 'cfNonLKey:userId', 'H5lSDC5RxJirdUutoNz9DhRlUKAFkczORSe+1xZo0WE='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30423823;65535;1106265098:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.68.240.65'
 
-------
-
+=========6
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfNonLKey:nonlkey_cols', '10.0.126.251|51547|0|0|410|192.108.239.108|443|0|420|13|0|0|0|0|0:0|0|0|0|0|0|0|1418|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|376475|-|-|-|t|0|0|0|0.0|0|1198|11545|0|1600072211|NONE|video-weaver.lhr03.hls.ttvnw.net|-||-|-|-|-|-|-|-|0|0|0|0|0|0|0|172.25.112.152|-|3|2|-|1600069289|1600073099247|-|-|-|-|-|-|v12|-|1229|0|0/0|0|11576|0|0|NONE|0|0|0|-|29|-|-|ou8RUCkuYvI2TQHMqoPawasqQkuJDXwSSjKv0YRYKzM=|netscaler1.com;1593463031;30410741;65535;4219338762:|-|-|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:44:59.411733'
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfNonLKey:partitionNum', '46'
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfNonLKey:srcTimeStamp', '1600073099411'
 put 'stage_weblogs','Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38=_df148ef43c9d9-c806-42c0-90ad-ce3ee2c81c1a', 'cfNonLKey:userId', 'Uyp1/k9AdqyDUJzRzCxwCNOkNt7ntc8q3Skt9jEb/38='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30410741;65535;4219338762:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.0.126.251'
 
-
--------
-
+=========7
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfNonLKey:nonlkey_cols', '10.5.178.20|37905|0|0|410|165.225.81.247|80|0|0|22|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|CONNECT|www.zscaler.com:80|www.zscaler.com:80||20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947710072|vs-http|1600066514|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|40|375|0/0|0|281|0|0|NONE|407|0|0|-|-|43/43/43 218 241/241 0.0/0.0|-|ZI6SEzgB7q4BRMh2DMrGnOB7DLxT66Hkz6zujyZojQ8=|netscaler1.com;1593463031;30384087;65535;347211018:|-|Windows Microsoft Windows 10 Enterprise ZTunnel/1.0|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:00.873740'
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfNonLKey:partitionNum', '73'
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfNonLKey:srcTimeStamp', '1600073100873'
 put 'stage_weblogs','oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY=_df148bdd82964-9d48-4e7b-9a90-5683978ba1b5', 'cfNonLKey:userId', 'oTATmSfNxUOM9S/Pd0sPm5UckbzwK7qcvb0FFvwZmIY='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30384087;65535;347211018:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.5.178.20'
 
---------
-
+=========8
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfNonLKey:nonlkey_cols', '10.71.20.183|43940|0|0|410|172.67.164.47|80|0|0|44|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|static-0.caribosome.com|/dr/EOXoMMeKd0c-vf_E5hwvVP1lVW4P9tKbPebbUNaxMM9S0C2l6w4wNDLrMXdBmR4SPDlQydKKBAuQ2eGSU0xDSXFIReb3_t8KP5dGxmW-NhSI7rM32ltxSe296HpJDBHDfGn_dgltOq_Gfc4rpfacuiW-06_xLoyn0NBBBZL1BvodCqTg1IakwTSjcr7gl_Zg8jowYMqH_88V9uf0yQFFu2ETrSM_hcnIkFJnE9DdriDQNs7NhmsjJwfZkYyG6dT4sofDJd40gqGN8dSxQhcUBl6xSeUs2FOSkH81GgChvScbrmrpfyUkUhqkj_WD7OJl8yJwNqLHjXRLxlDngdVEGKox2wizsNXb7feYEp2ZxXUiInUSo_Sju-JE_i-5itsc9BgEayn-CFVTdL0pAOx6VzzMwTEHCqYziayGDsN1DWpgBqbE0fAi6ow9N7LDGLA|url=https%3A%2F%2Fapptastic.g2afse.com%2Fclick%3Fpid%3D55%26offer_id%3D2605001%26sub1%3D93226532-f666-11ea-97f5-114ffd0001d0_648_14438512_cpi%26sub2%3DCAsszrkURUs8IJBrjbXHKfBo_DM76MmBG5960eifVuSAHSo38%26sub4%3D0c46c5046faf4dff9692ac92c4acd26c:%20CallApp%20-%20Caller%20ID%20&%20Block%26sub3%3D%26sub3%3D|20004|2|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947710184|vs-http|1600065190|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|40|1396|0/0|0|1038|0|0|NONE|301|0|0|-|-|149/149/149 899 998/998 0.0/0.0|text/html; charset=utf-8|pxw6z/Ovw1t+awshuMkABNm2+l6SB53WVcrJ3T4paZs=|netscaler1.com;1593463031;30374124;65535;3071559434:|-|Mozilla/5.0 (Linux; Android 10; SM-G960F Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.101 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:01.448743'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfNonLKey:partitionNum', '9'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfNonLKey:srcTimeStamp', '1600073101448'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df148a7987b1c-aa7d-4072-a6d7-4f1cf7ca0849', 'cfNonLKey:userId', 'e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30374124;65535;3071559434:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.71.20.183'
 
----
-
+=========9
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:loc', 'GLB1'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:nonlkey_cols', '10.71.20.183|43978|0|0|410|172.67.164.47|80|0|0|169|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|static-0.caribosome.com|/dr/EBW0cKHZ5PDVQxflBmyswGTp2BP78zyaEkTS90FDjNWDMdYvfa9S_-_8e_tcQfMBG4Ex4pRWR4gMYaDZ6QoqdyJ3GQpSJRZkOzq5YatkXqfbdglLfvxNCgYrILn9tJ6E0qbIZ5joAvMCKTfGdDwXpxnJSLiSGSQkRKdBSF75ac9GKlFU1Lp-khii_QyRssGYs8XdS7YiOKRgjzrV1Bik8Esc8tZVxDlbOfVkg6YXesHhioCBQaypYiYip20EVqonlWQ3mIc363BAlKqSf6vSyEosePi63njqBXchnSY_zoEQQ4LtfLOGCTiQ7TBvFH1A8BandnPxSpwsRCPNcLxDZ8R1t721wl7snJ4xGCYvCKTjXeGW4B462b_8qKt7tR4PiheA1qkKSlK95Wz5r-Opf4j_saOlng6xem-gzjfDeFbKvskmvaY24bZ6F3wTXRd0Z9d87ALnGVXTIk7XqrgrrEYh8U0y5AmqprOWEClOcUm3fgXMFSy0kX-Q1ntmcA0dAGdQhGVKFj7EyllJSTxVyA|url=http%3A%2F%2Fclick.diyomisoft.net%2Ftracking%2Fclick%3Ftrafficsource%3D1373697409%26offerid%3D429375622641634846%26payout%3D0.49%26clickid%3D93226532-f666-11ea-97f5-114ffd0001d0_669_14638548_cpi%26pub_subid%3DDq7qUiqhkxctG2MEtz-JIKye_CP7YQiRR6wFzII9R5g9J0DEI%26idfa%3D%26gaid%3D%26sub_placement%3D0c46c5046faf4dff9692ac92c4acd26c:%20CallApp%20-%20Caller%20ID%20&%20Block|0|0|2|0|0|0|ns_videoopt_http_body_detection|1|0|8|0|1|0|1356|172.25.112.152|-|0|948567915|vs-http|1600065190|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|244|1594|0/0|0|1204|0|0|NONE|301|0|0|-|-|0/0/0 0 0/0 0.0/0.0|text/html; charset=utf-8|pxw6z/Ovw1t+awshuMkABNm2+l6SB53WVcrJ3T4paZs=|netscaler1.com;1593463031;30374124;65535;3071559434:|-|Mozilla/5.0 (Linux; Android 10; SM-G960F Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.101 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:01.823743'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:partitionNum', '9'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:srcTimeStamp', '1600073101823'
 put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:userId', 'e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU='
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30374124;65535;3071559434:'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.71.20.183'
+
+
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:AVP1', '11'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:AVP2', 'idata.o2.co.uk'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:AVP4', '21'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:AVP5', '1132F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30283195;65535;3601678858:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:AVP1', '21'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:AVP4', '22'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:AVP5', '2232F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30164164;65535;1756430346:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP1', '31'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP2', 'idata.o2.co.uk'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP4', '23'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP5', '3332F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP1', '41'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP4', '24'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:AVP5', '4432F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30084879;65535;3775006730:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:AVP1', '51'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:AVP2', 'idata.o2.co.uk'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:AVP4', '25'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:AVP5', '5532F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30423823;65535;1106265098:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:AVP1', '61'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:AVP4', '26'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:AVP5', '6632F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30410741;65535;4219338762:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:AVP1', '71'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:AVP4', '27'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:AVP5', '7732F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30384087;65535;347211018:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP1', '81'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP4', '28'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP5', '8832F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP1', '91'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP2', 'giffgaff.com'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP3', 'pcfar-pgw-1'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP4', '29'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:AVP5', '9932F40139B032F401082C4A6E'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:CC', 'PCRF_RART'
+put 'stage_radius','netscaler1.com;1593463031;30374124;65535;3071559434:_PCRF_RART', 'cfRadius:TS', '1600073020000'
+
+
+put 'csp_apn_lkp','10.66.173.214', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.66.173.214', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.66.173.214', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.66.173.214', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.0.177.104', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.0.177.104', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.0.177.104', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.0.177.104', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.8.2.225', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.8.2.225', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.8.2.225', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.8.2.225', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.68.240.65', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.68.240.65', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.68.240.65', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.68.240.65', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.0.126.251', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.0.126.251', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.0.126.251', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.0.126.251', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.5.178.20', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.5.178.20', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.5.178.20', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.5.178.20', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.71.20.183', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.71.20.183', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.71.20.183', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.71.20.183', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.162.106.182', 'cfcspapn:Network', '10.0.0.0/10'
+
+put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
+put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:APNName', 'Idata'
+put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:CSP', 'o2'
+put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:Network', '10.0.0.0/10'

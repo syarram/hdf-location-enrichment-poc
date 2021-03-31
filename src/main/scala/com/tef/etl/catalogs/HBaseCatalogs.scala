@@ -17,7 +17,8 @@ object HBaseCatalogs {
       "partition_web":{"cf":"cfNonLKey", "col":"partitionNum", "type":"string"},
       "nonlkey_cols":{"cf":"cfNonLKey", "col":"nonlkey_cols", "type":"string"},
       "loc":{"cf":"cfNonLKey", "col":"loc", "type":"string"},
-      "csp":{"cf":"cfNonLKey", "col":"csp", "type":"string"}
+      "sessionid":{"cf":"cfNonLKey", "col":"sessionid", "type":"string"},
+      "clientip":{"cf":"cfNonLKey", "col":"clientip", "type":"string"}
     }
   }""".stripMargin
 
