@@ -104,8 +104,10 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     withRadiusDF.show(1,false)
 
     val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,withRadiusDF,"WEB")
+    expandedDF.printSchema()
+    val finalDF = TransactionDFOperations.getFinalDF(expandedDF)
 
-    expandedDF.write.partitionBy("dmy","hh","loc","csp")
+    finalDF.write.partitionBy("dt","hour","loc","csp")
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
       .mode(SaveMode.Overwrite)
@@ -225,7 +227,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     import spark.implicits._
     if (stageKeys.count > 0) {
       println("******************Delete didnt happen successfully in previour run - deleting " + stageKeys.count + " records here")
-
       val conf = HBaseConfiguration.create()
       val hbaseContext = new HBaseContext(spark.sparkContext, conf)
       val stageKeysRDD = stageKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd

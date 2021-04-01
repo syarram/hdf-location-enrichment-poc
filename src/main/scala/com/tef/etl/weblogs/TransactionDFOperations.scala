@@ -1,5 +1,6 @@
 package com.tef.etl.weblogs
 
+import com.tef.etl.catalogs.TargetCatalog
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, concat, hour, lit, minute, rank, row_number, second, split, to_date, udf, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -197,12 +198,13 @@ object TransactionDFOperations {
    .withColumn("optsource",split(col("nonlkey_cols"),"\\|").getItem(182))
    .withColumn("predicteduagroup",split(col("nonlkey_cols"),"\\|").getItem(183))
    .withColumn("sslinfolog",split(col("nonlkey_cols"),"\\|").getItem(184))
-   .withColumn("timestamp",split(col("nonlkey_cols"),"\\|").getItem(185)).drop("nonlkey_cols")
-    df1.printSchema()
+   .withColumn("timestamp",split(col("nonlkey_cols"),"\\|").getItem(185))
+   .withColumn("foundurl",lit("Null")).drop("nonlkey_cols")
+
     val df3 = enrichTCPSL(df1)
     df3.select("minrtt","avgrtt","maxrtt","bdp","avgbif","maxbif","pktlossrate","pktretransrate").show
 
-    val df4 = df3.withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
+    df3.withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
       .when(col("optimisedsize") >= 1000 && col("optimisedsize") < 200000,"Small")
     .when(col("optimisedsize") >= 200000 && col("optimisedsize") < 1000000,"Medium")
     .when(col("optimisedsize") >= 1000000 && col("optimisedsize") < 5000000,"Large")
@@ -227,7 +229,6 @@ object TransactionDFOperations {
       .withColumn("tcpthroughput", when(col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
-    df4
   }
 
   def enrichTCPSL(df:DataFrame): DataFrame ={
@@ -254,13 +255,13 @@ object TransactionDFOperations {
       "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
       "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
       "azimuth","enodeb_id","tac","ura")
-    df.join(ldf,df("lkey_mme")===ldf("lkey"),"left").drop("lkey")
+    df.join(ldf,df("lkey")===ldf("lkey"),"left").drop(ldf("lkey"))
   }
 
   def enrichDiviceDB(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    val ldf = lookupDF.select("emsisdn","imsi","imei","marketing_name","brand_name","model_name",
-      "operating_system","device_type","tariff_offering_id")
-    df.join(ldf,df("userid_web")===ldf("emsisdn"),"left").drop(ldf("emsisdn"))
+    val ldf = lookupDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
+      "operating_system","device_type","offering")
+    df.join(ldf,df("userid_web")===ldf("emsisdn"),"left")
   }
 
   def enrichRadius(df:DataFrame, lookupDF:DataFrame):DataFrame={
@@ -269,5 +270,27 @@ object TransactionDFOperations {
     val rSDF = sDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
     df.join(rSDF,df("sessionid")===rSDF("sesID"),"left").drop("rank","rkey","sesID")
   }
+
+  def getFinalDF(df:DataFrame):DataFrame={
+    val missingColumnsDF = df.withColumn("",lit("Null"))
+      .withColumn("calc_1",lit("Null"))
+      .withColumn("calc_2",lit("Null"))
+      .withColumn("calc_3",lit("Null"))
+      .withColumn("calc_4",lit("Null"))
+      .withColumn("calc_5",lit("Null"))
+      .withColumn("vslsessinb",lit("Null"))
+      .withColumn("vslsessoutb",lit("Null"))
+      .withColumn("vslstalldur",lit("Null"))
+      .withColumn("vslstalltme",lit("Null"))
+      .withColumn("vslqtyup",lit("Null"))
+      .withColumn("vslqtydwn",lit("Null"))
+      .withColumn("vslstltncy",lit("Null"))
+      .withColumn("dt", col("dmy"))
+      .withColumn("hour", col("hh"))
+
+    val tgtExpr = TargetCatalog.TargetExpr
+    missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
+  }
+
 
 }
