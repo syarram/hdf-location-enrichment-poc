@@ -15,7 +15,6 @@ import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.slf4j.{Logger, LoggerFactory}
-
 import java.net.URI
 
 
@@ -81,25 +80,58 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
     val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
     locationDF.show(5,false)
+
+    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
+    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
+      "\t",Definitions.deviceDBSchema)
+    val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
+    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
+    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
+    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
+
+
+    val sourceTSFiltered = sourceDF
+    val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual("NoMatch"))
+    val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
+
+
+    val transWithLkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceDFWithLkey, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
+    val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithLkeyOtherTables,"WEB")
+    val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
+    transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
+      .option("codec","com.hadoop.compression.lzo.LzopCodec")
+      .option("delimiter","\t")
+      .mode(SaveMode.Overwrite)
+      .csv("/data/web")
+
+
+    val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
+
+
+    val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
+    val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithMMELkeyOtherTables,"WEB")
+    val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
+    transWithMMELkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
+      .option("codec","com.hadoop.compression.lzo.LzopCodec")
+      .option("delimiter","\t")
+      .mode(SaveMode.Overwrite)
+      .csv("/data/web")
+
+
+
+/*
     val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
     withMMEDF.show(5, false)
 
-    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
     val withMagnetDF = TransactionDFOperations.enrichMagnet(withMMEDF,magnetDF)
     withMagnetDF.show(5,false)
 
-    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
-      "\t",Definitions.deviceDBSchema)
     val withDeviceDBDF = TransactionDFOperations.enrichDiviceDB(withMagnetDF,deviceDBDF)
     withDeviceDBDF.show(5,false)
 
-    val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
-    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
     cspDF.show(5,false)
     val withAPNDF= TransactionDFOperations.enrichAPNID(withDeviceDBDF,cspDF)
 
-    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
-    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
     val withRadiusDF = TransactionDFOperations.enrichRadius(withAPNDF,radiusSRCDF)
     withRadiusDF.show(1,false)
 
@@ -113,6 +145,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .mode(SaveMode.Overwrite)
       .csv("/data/web")
 
+*/
 
     //sourceDF.show(100,false)
 

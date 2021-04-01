@@ -2,7 +2,7 @@ package com.tef.etl.weblogs
 
 import com.tef.etl.catalogs.TargetCatalog
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, concat, hour, lit, minute, rank, row_number, second, split, to_date, udf, when}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
@@ -292,5 +292,34 @@ object TransactionDFOperations {
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
   }
 
+
+  def joinForLookUps(trasactionDF: DataFrame, magnetDF: DataFrame, deviceDBDF: DataFrame, cspDF: DataFrame, radiusSRCDF: DataFrame): DataFrame = {
+
+    val magnetSpecificColsDF = magnetDF.select("lkey",
+      "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
+      "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
+      "azimuth","enodeb_id","tac","ura")
+    val deviceDBSelectColsDF = deviceDBDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
+      "operating_system","device_type","offering")
+    val radiusSessionIDDF = radiusSRCDF.withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
+    val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
+    val radiusSessionIDOrderedDF = radiusSessionIDDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
+
+    trasactionDF
+      .join(magnetSpecificColsDF,trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
+      .join(deviceDBSelectColsDF,trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left")
+      .join(cspDF,trasactionDF("clientip")===cspDF("ip"),"left").drop("ip","apn-name","network")
+      .join(radiusSessionIDOrderedDF,trasactionDF("sessionid")===radiusSessionIDOrderedDF("sesID"),"left").drop("rank","rkey","sesID")
+
+  }
+
+  def joinWithMME(sourceDFWithoutLkey: DataFrame,locationDF: DataFrame, hdfsPartitions: Int): DataFrame = {
+    sourceDFWithoutLkey
+      .join(locationDF, sourceDFWithoutLkey("userid_web") === locationDF("userid_mme") && locationDF("time_mme") <= sourceDFWithoutLkey("time_web") && sourceDFWithoutLkey("partition_web") === locationDF("partition_mme"),"left_outer")
+      .drop("lkey_web").withColumn("lkey_web", when(locationDF("lkey_mme").isNull,"1090-79999").otherwise(locationDF("lkey_mme")))
+      .repartition(hdfsPartitions, col("userid_web"))
+      .sortWithinPartitions(col("userid_web_seq"),desc("time_mme"))
+      .dropDuplicates(Array("time_web","userid_web_seq"))
+  }
 
 }
