@@ -66,7 +66,7 @@ object HBaseCatalogs {
     "columns":{
       "userid_mme_seq":{"cf":"rowkey", "col":"key", "type":"string"},
       "userid_mme":{"cf":"cfLocation", "col":"emsisdn", "type":"string"},
-      "lkey":{"cf":"cfLocation", "col":"lkey", "type":"string"},
+      "lkey_mme":{"cf":"cfLocation", "col":"lkey_mme", "type":"string"},
       "partition_mme":{"cf":"cfLocation", "col":"partitionNum", "type":"string"},
       "time_mme":{"cf":"cfLocation", "col":"starttime", "type":"string"}
     }

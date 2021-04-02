@@ -12,7 +12,6 @@ object TransactionDFOperations {
   }
 
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
-    import spark.implicits._
     val df1 = //df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
       df.withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
       .withColumn("serverlocport",split(col("nonlkey_cols"),"\\|").getItem(2))
@@ -198,13 +197,10 @@ object TransactionDFOperations {
    .withColumn("optsource",split(col("nonlkey_cols"),"\\|").getItem(182))
    .withColumn("predicteduagroup",split(col("nonlkey_cols"),"\\|").getItem(183))
    .withColumn("sslinfolog",split(col("nonlkey_cols"),"\\|").getItem(184))
-   .withColumn("timestamp",split(col("nonlkey_cols"),"\\|").getItem(185))
+   .withColumn("timestamp_src",split(col("nonlkey_cols"),"\\|").getItem(185))
    .withColumn("foundurl",lit("Null")).drop("nonlkey_cols")
 
-    val df3 = enrichTCPSL(df1)
-    df3.select("minrtt","avgrtt","maxrtt","bdp","avgbif","maxbif","pktlossrate","pktretransrate").show
-
-    df3.withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
+    enrichTCPSL(df1).withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
       .when(col("optimisedsize") >= 1000 && col("optimisedsize") < 200000,"Small")
     .when(col("optimisedsize") >= 200000 && col("optimisedsize") < 1000000,"Medium")
     .when(col("optimisedsize") >= 1000000 && col("optimisedsize") < 5000000,"Large")
@@ -214,18 +210,18 @@ object TransactionDFOperations {
         .when(col("src_flag").equalTo(30),"NS_MEDIA_TYPE_CT_PD")
         .when(col("src_flag").equalTo(31),"NS_MEDIA_TYPE_CT_ABR")
         .when(col("src_flag").equalTo(32),"NS_MEDIA_TYPE_OTHER")
-        .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("-"))
-      .withColumn("conttype", split(col("contenttype"),"/")(0))
-      .withColumn("conttype_1", split(col("contenttype"),"/")(1))
-      .withColumn("dmy", to_date(col("timestamp")))
-      .withColumn("hh", hour(col("timestamp")))
-      .withColumn("mm", minute(col("timestamp")))
-      .withColumn("ss", second(col("timestamp")))
-      .withColumn("ms",split(col("timestamp"),"\\.")(1))
+        .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("NOT_DETECTED"))
+      .withColumn("conttype_1", split(col("contenttype"),"/")(0))
+      .withColumn("conttype", split(col("contenttype"),"/")(1))
+      .withColumn("dmy", to_date(col("timestamp_src")))
+      .withColumn("hh", date_format(col("timestamp_src"),"HH"))
+      .withColumn("mm", minute(col("timestamp_src")))
+      .withColumn("ss", second(col("timestamp_src")))
+      .withColumn("ms",split(col("timestamp_src"),"\\.")(1))
       .withColumn("appthroughput",
         when(col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
-          (col("optimisedsize").divide(col("transactiontime")))*8
-        ).otherwise(""))
+          8*(col("optimisedsize").divide(col("transactiontime")))
+        ).otherwise(0))
       .withColumn("tcpthroughput", when(col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
@@ -245,7 +241,7 @@ object TransactionDFOperations {
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
 
-  def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
+  /*def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
     df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").
       drop("ip","apn-name","network")
   }
@@ -269,7 +265,7 @@ object TransactionDFOperations {
     val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
     val rSDF = sDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
     df.join(rSDF,df("sessionid")===rSDF("sesID"),"left").drop("rank","rkey","sesID")
-  }
+  }*/
 
   def getFinalDF(df:DataFrame):DataFrame={
     val missingColumnsDF = df.withColumn("",lit("Null"))
@@ -285,8 +281,9 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
-      .withColumn("dt", col("dmy"))
+      .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
       .withColumn("hour", col("hh"))
+      .withColumn("timestamp", col("time_web"))
 
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
@@ -304,22 +301,25 @@ object TransactionDFOperations {
     val radiusSessionIDDF = radiusSRCDF.withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
     val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
     val radiusSessionIDOrderedDF = radiusSessionIDDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
-
     trasactionDF
-      .join(magnetSpecificColsDF,trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
-      .join(deviceDBSelectColsDF,trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left")
-      .join(cspDF,trasactionDF("clientip")===cspDF("ip"),"left").drop("ip","apn-name","network")
+      .join(cspDF,trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
       .join(radiusSessionIDOrderedDF,trasactionDF("sessionid")===radiusSessionIDOrderedDF("sesID"),"left").drop("rank","rkey","sesID")
-
+      .join(magnetSpecificColsDF,trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
+      .join(deviceDBSelectColsDF,trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
+      .withColumnRenamed("userid_web","emsisdn")
   }
 
   def joinWithMME(sourceDFWithoutLkey: DataFrame,locationDF: DataFrame, hdfsPartitions: Int): DataFrame = {
     sourceDFWithoutLkey
-      .join(locationDF, sourceDFWithoutLkey("userid_web") === locationDF("userid_mme") && locationDF("time_mme") <= sourceDFWithoutLkey("time_web") && sourceDFWithoutLkey("partition_web") === locationDF("partition_mme"),"left_outer")
-      .drop("lkey_web").withColumn("lkey_web", when(locationDF("lkey_mme").isNull,"1090-79999").otherwise(locationDF("lkey_mme")))
+      .join(locationDF,
+        sourceDFWithoutLkey("userid_web") === locationDF("userid_mme") &&
+          locationDF("time_mme") <= sourceDFWithoutLkey("time_web") &&
+          sourceDFWithoutLkey("partition_web") === locationDF("partition_mme"),"left_outer")
+      .withColumn("lkey", when(locationDF("lkey_mme").isNull,"1090-79999").otherwise(locationDF("lkey_mme")))
       .repartition(hdfsPartitions, col("userid_web"))
       .sortWithinPartitions(col("userid_web_seq"),desc("time_mme"))
       .dropDuplicates(Array("time_web","userid_web_seq"))
+    //returning location in column lkey
   }
 
 }

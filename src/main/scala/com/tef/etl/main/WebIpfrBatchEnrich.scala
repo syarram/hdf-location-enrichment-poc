@@ -1,41 +1,21 @@
 package com.tef.etl.main
 
 import com.tef.etl.SparkFuncs.{SparkSessionTrait, SparkUtils}
-import com.tef.etl.SparkFuncs.SparkUtils.{part_dt, part_hour}
 import com.tef.etl.catalogs.HBaseCatalogs
 import com.tef.etl.model.Definitions
 import com.tef.etl.weblogs.{TransactionDFOperations, Utils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
-import org.apache.hadoop.hbase.client.{Delete, HTable, Put}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode}
-import org.apache.spark.sql.functions._
+import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.spark.HBaseContext
-import org.apache.hadoop.hbase.util.Bytes
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.slf4j.{Logger, LoggerFactory}
-import java.net.URI
-
-
-
-//import org.apache.hadoop.hbase.client.TableDescriptor
-//import org.apache.hadoop.hbase.client.TableDescriptor
-import org.apache.hadoop.hbase.spark.HBaseRelation
-import org.apache.hadoop.hbase.HBaseIOException
-import org.apache.spark.sql.execution.datasources.hbase
-import org.json4s.jackson.JsonMethods
-//import org.apache.hadoop.hbase.AuthUtil.loginClient
-
-
-import org.apache.spark.sql.execution.datasources.hbase.HBaseTableCatalog
-
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.slf4j.LoggerFactory
 
 object WebIpfrBatchEnrich extends SparkSessionTrait {
 
   def main(args: Array[String]): Unit = {
-
-
     val format = "org.apache.spark.sql.execution.datasources.hbase"
     val locationTable = "\"" + args(0) + "\""
     val transactionTable = "\"" + args(1) + "\""
@@ -54,7 +34,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
 
-
     import spark.implicits._
     spark.sparkContext.setLogLevel(errorLogging)
 
@@ -70,9 +49,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
     //val stageKeys = SparkUtils.reader(format, transactionKeys)(spark)
     //val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
-
     // controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
     //tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
+
     val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
     sourceDF.show(5, false)
@@ -84,30 +63,29 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
     val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
       "\t",Definitions.deviceDBSchema)
+
     val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
-    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark))
+    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid")
+
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
 
-
     val sourceTSFiltered = sourceDF
-    val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual("NoMatch"))
-    val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
-
-
+    val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual
+    ("NoMatch")).withColumnRenamed("lkey_web","lkey")
     val transWithLkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceDFWithLkey, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
-    val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithLkeyOtherTables,"WEB")
+    val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithLkeyOtherTables,
+      "WEB")
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
-    transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
-      .option("codec","com.hadoop.compression.lzo.LzopCodec")
-      .option("delimiter","\t")
-      .mode(SaveMode.Overwrite)
-      .csv("/data/web")
+        transWithLkeyOtherTablesExpandedFinal.printSchema()
+        transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
+          .option("codec","com.hadoop.compression.lzo.LzopCodec")
+          .option("delimiter","\t")
+          .mode(SaveMode.Overwrite)
+          .csv("/data/web")
 
-
+    val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
-
-
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithMMELkeyOtherTables,"WEB")
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
@@ -116,8 +94,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .option("delimiter","\t")
       .mode(SaveMode.Overwrite)
       .csv("/data/web")
-
-
 
 /*
     val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
@@ -167,8 +143,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val hbaseContext = new HBaseContext(spark.sparkContext, conf)
     val webBothDFsRDD = onlyKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
   //  hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord => new Delete(deleteRecord),deleteBatchSize)
-
-
 
 
  //--    println("****************************************** Source count: "+sourceDF.count()+", Location Count: "+locationDF.count)

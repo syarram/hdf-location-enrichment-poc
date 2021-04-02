@@ -1,13 +1,12 @@
 package com.tef.etl.weblogs
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
-import java.util.{Calendar, Date}
+import java.util.Calendar
 
 object Utils {
 
