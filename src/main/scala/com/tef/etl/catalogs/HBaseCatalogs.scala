@@ -42,8 +42,8 @@ object HBaseCatalogs {
     "rowkey":"key",
     "columns":{
       "ip":{"cf":"rowkey", "col":"key", "type":"string"},
-      "apnid":{"cf":"cfcspapn", "col":"APN", "type":"string"},
-      "apn-name":{"cf":"cfcspapn", "col":"APNName", "type":"string"},
+      "apn-name":{"cf":"cfcspapn", "col":"APN", "type":"string"},
+      "apnid":{"cf":"cfcspapn", "col":"APNName", "type":"string"},
       "csp":{"cf":"cfcspapn", "col":"CSP", "type":"string"},
       "network":{"cf":"cfcspapn", "col":"Network", "type":"string"}
     }
@@ -66,7 +66,7 @@ object HBaseCatalogs {
     "columns":{
       "userid_mme_seq":{"cf":"rowkey", "col":"key", "type":"string"},
       "userid_mme":{"cf":"cfLocation", "col":"emsisdn", "type":"string"},
-      "lkey_mme":{"cf":"cfLocation", "col":"lkey_mme", "type":"string"},
+      "lkey_mme":{"cf":"cfLocation", "col":"lkey", "type":"string"},
       "partition_mme":{"cf":"cfLocation", "col":"partitionNum", "type":"string"},
       "time_mme":{"cf":"cfLocation", "col":"starttime", "type":"string"}
     }

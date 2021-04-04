@@ -7,10 +7,6 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
 
-  def enrichMME(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    df.join(lookupDF,df("userid_web")===lookupDF("userid_mme"),"left").drop(lookupDF("userid_mme"))
-  }
-
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
     val df1 = //df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
       df.withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
@@ -156,8 +152,8 @@ object TransactionDFOperations {
    .withColumn("nsvsn",split(col("nonlkey_cols"),"\\|").getItem(141))
    .withColumn("nsslastupdtstmp",split(col("nonlkey_cols"),"\\|").getItem(142))
    .withColumn("nsvstcpstarttstmp",split(col("nonlkey_cols"),"\\|").getItem(143))
-   .withColumn("netlabel",split(col("nonlkey_cols"),"\\|").getItem(144))
-   .withColumn("tcpprofile",split(col("nonlkey_cols"),"\\|").getItem(145))
+   .withColumn("tcpprofile",split(col("nonlkey_cols"),"\\|").getItem(144))
+   .withColumn("netlabel",split(col("nonlkey_cols"),"\\|").getItem(145))
    .withColumn("conglev",split(col("nonlkey_cols"),"\\|").getItem(146))
    .withColumn("conglevclass",split(col("nonlkey_cols"),"\\|").getItem(147))
    .withColumn("signalqual",split(col("nonlkey_cols"),"\\|").getItem(148))
@@ -205,30 +201,38 @@ object TransactionDFOperations {
     .when(col("optimisedsize") >= 200000 && col("optimisedsize") < 1000000,"Medium")
     .when(col("optimisedsize") >= 1000000 && col("optimisedsize") < 5000000,"Large")
     .when(col("optimisedsize") >= 5000000, "Huge").otherwise("-"))
-      .withColumn("flag", when(col("src_flag").equalTo(0),"NS_MEDIA_TYPE_UNCATEGORIZED")
+      .withColumn("flag",
+        when(col("src_flag").equalTo(0),"NS_MEDIA_TYPE_UNCATEGORIZED")
         .when(col("src_flag").equalTo(29),"NS_MEDIA_TYPE_ENC_ABR")
         .when(col("src_flag").equalTo(30),"NS_MEDIA_TYPE_CT_PD")
         .when(col("src_flag").equalTo(31),"NS_MEDIA_TYPE_CT_ABR")
         .when(col("src_flag").equalTo(32),"NS_MEDIA_TYPE_OTHER")
         .when(col("src_flag").equalTo(33),"NS_MEDIA_TYPE_QUIC_ABR").otherwise("NOT_DETECTED"))
-      .withColumn("conttype_1", split(col("contenttype"),"/")(0))
+      .withColumn("conttype_1", when(
+        split(col("contenttype"),"/")(0).equalTo("-"),"unknown")
+        .otherwise(split(col("contenttype"),"/")(0)))
       .withColumn("conttype", split(col("contenttype"),"/")(1))
       .withColumn("dmy", to_date(col("timestamp_src")))
       .withColumn("hh", date_format(col("timestamp_src"),"HH"))
       .withColumn("mm", minute(col("timestamp_src")))
       .withColumn("ss", second(col("timestamp_src")))
-      .withColumn("ms",split(col("timestamp_src"),"\\.")(1))
+      .withColumn("ms", split(col("timestamp_src"),"\\.")(1).divide(1000))
       .withColumn("appthroughput",
-        when(col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
-          8*(col("optimisedsize").divide(col("transactiontime")))
+        when(
+          col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
+          (col("optimisedsize")*8).divide(col("transactiontime"))
         ).otherwise(0))
-      .withColumn("tcpthroughput", when(col("avgrtt") > 10 ,
+      .withColumn("tcpthroughput",
+        when(
+          col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
   }
 
   def enrichTCPSL(df:DataFrame): DataFrame ={
-    df.withColumn("minrtt", split(col("src_tcpsl"),"/")(0))
+    df.withColumn("minrtt",
+      when (split(col("src_tcpsl"),"/")(0).equalTo("-"), null).
+        otherwise(split(col("src_tcpsl"),"/")(0)))
       .withColumn("avgrtt", split(col("src_tcpsl"),"/")(1))
       .withColumn("tmp_1", split(col("src_tcpsl"),"/")(2))
       .withColumn("tmp_2", split(col("src_tcpsl"),"/")(3))
@@ -241,7 +245,12 @@ object TransactionDFOperations {
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
 
-  /*def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
+  /*
+  def enrichMME(df:DataFrame, lookupDF:DataFrame):DataFrame={
+    df.join(lookupDF,df("userid_web")===lookupDF("userid_mme"),"left").drop(lookupDF("userid_mme"))
+  }
+
+  def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
     df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").
       drop("ip","apn-name","network")
   }
@@ -283,10 +292,12 @@ object TransactionDFOperations {
       .withColumn("vslstltncy",lit("Null"))
       .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
       .withColumn("hour", col("hh"))
-      .withColumn("timestamp", col("time_web"))
+      .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
+    //2020-09-14 09:45:00.310738
 
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
+
   }
 
 

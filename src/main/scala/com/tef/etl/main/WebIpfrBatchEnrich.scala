@@ -41,9 +41,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val fs = FileSystem.get(conf)
     val magnetPartition = Utils.getLastPartition(fs,
       "hdfs://localhost:9000/data/Magnet/dt=","20210325")
-    println(s"*************************************************************************************",
-      magnetPartition
-    )
 
     // Delete records from source Table if the previous run didnt finish successfully
     //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
@@ -53,12 +50,10 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     //tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
 
     val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
-    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))//.filter(col("userid_web").isNotNull)
-    sourceDF.show(5, false)
+    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark)).cache()//.filter(col("userid_web").isNotNull)
 
     val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
     val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
-    locationDF.show(5,false)
 
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
     val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
@@ -70,30 +65,33 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
 
-    val sourceTSFiltered = sourceDF
-    val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual
-    ("NoMatch")).withColumnRenamed("lkey_web","lkey")
+    val sourceDFWithLkey = sourceDF.filter(
+      col("lkey_web").notEqual("Unknown") &&
+        col("lkey_web").notEqual("NoMatch"))
+      .withColumnRenamed("lkey_web","lkey")
     val transWithLkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceDFWithLkey, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithLkeyOtherTables,
       "WEB")
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
-        transWithLkeyOtherTablesExpandedFinal.printSchema()
-        transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
-          .option("codec","com.hadoop.compression.lzo.LzopCodec")
-          .option("delimiter","\t")
-          .mode(SaveMode.Overwrite)
-          .csv("/data/web")
 
-    val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
+    transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
+      .option("codec","com.hadoop.compression.lzo.LzopCodec")
+      .option("delimiter","\t")
+      .mode(SaveMode.Append)
+      .csv("/data/web")
+
+    val sourceDFWithoutLkey = sourceDF.filter(col("lkey_web")==="Unknown" || col("lkey_web")==="NoMatch")
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithMMELkeyOtherTables,"WEB")
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
+
     transWithMMELkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
-      .mode(SaveMode.Overwrite)
+      .mode(SaveMode.Append)
       .csv("/data/web")
+
 
 /*
     val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
