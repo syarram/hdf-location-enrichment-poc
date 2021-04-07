@@ -20,9 +20,10 @@ object Utils {
 
   def getLastPartition(fs:FileSystem, loc:String, oDate:String): String ={
     try{
-      val partitionList = fs.listStatus(new Path(loc+oDate)).map(p => p.getPath.toString)
+      val partitionList = fs.listStatus(new Path(loc+"="+oDate)).map(p => p.getPath.toString)
       val partitionSize = partitionList.size
-      if(partitionSize>=1) partitionList(partitionSize-1) else getLastPartition(fs,loc,previousDay(oDate))
+      if(partitionSize>=1) partitionList(partitionSize-1)
+      else getLastPartition(fs,loc,previousDay(oDate))
     }catch{
       case e:FileNotFoundException =>{
         getLastPartition(fs,loc,previousDay(oDate))

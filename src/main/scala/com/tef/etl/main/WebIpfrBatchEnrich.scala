@@ -6,41 +6,56 @@ import com.tef.etl.model.Definitions
 import com.tef.etl.weblogs.{TransactionDFOperations, Utils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.spark.HBaseContext
+import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.slf4j.LoggerFactory
 
 object WebIpfrBatchEnrich extends SparkSessionTrait {
 
   def main(args: Array[String]): Unit = {
     val format = "org.apache.spark.sql.execution.datasources.hbase"
-    val locationTable = "\"" + args(0) + "\""
-    val transactionTable = "\"" + args(1) + "\""
-    val transactionTableConnector = args(1)
+    val locationTable = args(0)
+    val transactionTable = args(1)
+    val magnetPath = args(2).split("=")(0)
+    val magnetPathDate = args(2).split("=")(1)
+    val deviceDBPath = args(3)
+    val cspTable = args(4)
+    val radiusTable = args(5)
+    val logType = args(6)
+    val hdfsPartitions = args(7).toInt
+    val enrichPath = args(8)
+
+/*    val transactionTableConnector = args(1)
     val webIpfrEnrichControl = "\"" + args(2) + "\""
     val webIpfrEnrichControlConnector = args(2)
-    val errorLogging = args(3)
     val partitions = args(4).toInt
     val hdfsPath = args(5)
-    val hdfsPartitions = args(6).toInt
     val transactionTableKeys = "\"" + args(7) + "\""
     val transactionTableKeysConnector = args(7)
     val compressionFormat = args(8)
     val hdfsFormat = args(9)
-    val deleteBatchSize = args(10).toInt
+    val deleteBatchSize = args(10).toInt*/
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
 
-    import spark.implicits._
-    spark.sparkContext.setLogLevel(errorLogging)
+    logger.info("**********************Argument/Variables*************************************")
+    logger.info(s"locationTable=>$locationTable")
+    logger.info(s"transactionTable=>$transactionTable")
+    logger.info(s"magnetPath=>$magnetPath")
+    logger.info(s"magnetPathDate=>$magnetPathDate")
+    logger.info(s"deviceDBPath=>$deviceDBPath")
+    logger.info(s"cspTable=>$cspTable")
+    logger.info(s"radiusTable=>$radiusTable")
+    logger.info(s"logType=>$logType")
+    logger.info(s"hdfsPartitions=>$hdfsPartitions")
+    logger.info(s"enrichPath=>$enrichPath")
+    logger.info("*********************Argument/Variables*************************************")
 
-    val conf:Configuration = spark.sparkContext.hadoopConfiguration
-    val fs = FileSystem.get(conf)
-    val magnetPartition = Utils.getLastPartition(fs,
-      "hdfs://localhost:9000/data/Magnet/dt=","20210325")
+    import spark.implicits._
+    spark.sparkContext.setLogLevel(logType)
 
     // Delete records from source Table if the previous run didnt finish successfully
     //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
@@ -49,20 +64,23 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     // controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
     //tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
 
-    val webCatalog = HBaseCatalogs.stagewebcatalog(transactionTable)
-    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark)).cache()//.filter(col("userid_web").isNotNull)
+    val webCatalog = HBaseCatalogs.stagewebcatalog("\""+transactionTable+"\"")
+    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark)).cache()
 
-    val mmeCatalog = HBaseCatalogs.mmecatalog(locationTable)
+    val mmeCatalog = HBaseCatalogs.mmecatalog("\""+locationTable+"\"")
     val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
 
+    val hadoopConf:Configuration = spark.sparkContext.hadoopConfiguration
+    val fs = FileSystem.get(hadoopConf)
+    val magnetPartition = Utils.getLastPartition(fs,magnetPath,magnetPathDate)
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
-    val deviceDBDF = Utils.readLZO(spark,"hdfs://localhost:9000/data/DeviceDB/dt=20210324/",
-      "\t",Definitions.deviceDBSchema)
 
-    val cspCatalog = HBaseCatalogs.cspCatalog("\"csp_apn_lkp\"")
+    val deviceDBDF = Utils.readLZO(spark,deviceDBPath, "\t",Definitions.deviceDBSchema)
+
+    val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid")
 
-    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"stage_radius\"")
+    val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\""+radiusTable+"\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
 
     val sourceDFWithLkey = sourceDF.filter(
@@ -78,7 +96,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
       .mode(SaveMode.Append)
-      .csv("/data/web")
+      .csv(enrichPath)
 
     val sourceDFWithoutLkey = sourceDF.filter(col("lkey_web")==="Unknown" || col("lkey_web")==="NoMatch")
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
@@ -90,36 +108,44 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
       .mode(SaveMode.Append)
-      .csv("/data/web")
+      .csv(enrichPath)
+
+    val HbaseConf = HBaseConfiguration.create()
+    val hbaseContext = new HBaseContext(spark.sparkContext, HbaseConf)
+    val keysDF = sourceDF.select(col("userid_web_seq"))
+    keysDF.show(20, false)
+    val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
+    hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
+    (deleteRecord),4)
 
 
-/*
-    val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
-    withMMEDF.show(5, false)
+    /*
+        val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
+        withMMEDF.show(5, false)
 
-    val withMagnetDF = TransactionDFOperations.enrichMagnet(withMMEDF,magnetDF)
-    withMagnetDF.show(5,false)
+        val withMagnetDF = TransactionDFOperations.enrichMagnet(withMMEDF,magnetDF)
+        withMagnetDF.show(5,false)
 
-    val withDeviceDBDF = TransactionDFOperations.enrichDiviceDB(withMagnetDF,deviceDBDF)
-    withDeviceDBDF.show(5,false)
+        val withDeviceDBDF = TransactionDFOperations.enrichDiviceDB(withMagnetDF,deviceDBDF)
+        withDeviceDBDF.show(5,false)
 
-    cspDF.show(5,false)
-    val withAPNDF= TransactionDFOperations.enrichAPNID(withDeviceDBDF,cspDF)
+        cspDF.show(5,false)
+        val withAPNDF= TransactionDFOperations.enrichAPNID(withDeviceDBDF,cspDF)
 
-    val withRadiusDF = TransactionDFOperations.enrichRadius(withAPNDF,radiusSRCDF)
-    withRadiusDF.show(1,false)
+        val withRadiusDF = TransactionDFOperations.enrichRadius(withAPNDF,radiusSRCDF)
+        withRadiusDF.show(1,false)
 
-    val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,withRadiusDF,"WEB")
-    expandedDF.printSchema()
-    val finalDF = TransactionDFOperations.getFinalDF(expandedDF)
+        val expandedDF = TransactionDFOperations.sourceColumnSplit(spark,withRadiusDF,"WEB")
+        expandedDF.printSchema()
+        val finalDF = TransactionDFOperations.getFinalDF(expandedDF)
 
-    finalDF.write.partitionBy("dt","hour","loc","csp")
-      .option("codec","com.hadoop.compression.lzo.LzopCodec")
-      .option("delimiter","\t")
-      .mode(SaveMode.Overwrite)
-      .csv("/data/web")
+        finalDF.write.partitionBy("dt","hour","loc","csp")
+          .option("codec","com.hadoop.compression.lzo.LzopCodec")
+          .option("delimiter","\t")
+          .mode(SaveMode.Overwrite)
+          .csv("/data/web")
 
-*/
+    */
 
     //sourceDF.show(100,false)
 
@@ -135,12 +161,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       //    .mode(SaveMode.Append)
       .mode(SaveMode.Overwrite)
       .save(hdfsPath)*/
-
+/*
     val onlyKeys = sourceDF//.limit(2000000)
-    //val conf = HBaseConfiguration.create()
+    val conf = HBaseConfiguration.create()
     val hbaseContext = new HBaseContext(spark.sparkContext, conf)
     val webBothDFsRDD = onlyKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
-  //  hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord => new Delete(deleteRecord),deleteBatchSize)
+    hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord =>
+      new Delete(deleteRecord),deleteBatchSize)*/
 
 
  //--    println("****************************************** Source count: "+sourceDF.count()+", Location Count: "+locationDF.count)
@@ -228,14 +255,16 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     spark.close()
   }
 
-  private def tempStageKeysDelete(transactionTableKeysConnector: String, stageKeys: DataFrame) = {
+  /*private def tempStageKeysDelete(transactionTableKeysConnector: String, stageKeys: DataFrame) = {
     import spark.implicits._
     if (stageKeys.count > 0) {
       println("******************Delete didnt happen successfully in previour run - deleting " + stageKeys.count + " records here")
       val conf = HBaseConfiguration.create()
       val hbaseContext = new HBaseContext(spark.sparkContext, conf)
       val stageKeysRDD = stageKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
-      hbaseContext.bulkDelete[Array[Byte]](stageKeysRDD, TableName.valueOf(transactionTableKeysConnector), deleteRecord => new Delete(deleteRecord), 4)
+      hbaseContext.bulkDelete[Array[Byte]]
+      (stageKeysRDD, TableName.valueOf(transactionTableKeysConnector),
+        deleteRecord => new Delete(deleteRecord), 4)
     }
-  }
+  }*/
 }
