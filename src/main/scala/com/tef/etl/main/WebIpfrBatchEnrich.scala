@@ -74,7 +74,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val fs = FileSystem.get(hadoopConf)
     val magnetPartition = Utils.getLastPartition(fs,magnetPath,magnetPathDate)
     val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
-
+      .dropDuplicates("lkey")
     val deviceDBDF = Utils.readLZO(spark,deviceDBPath, "\t",Definitions.deviceDBSchema)
 
     val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
