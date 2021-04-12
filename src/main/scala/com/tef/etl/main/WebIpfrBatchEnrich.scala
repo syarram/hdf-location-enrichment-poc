@@ -80,6 +80,10 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid")
 
+    cspDF.show(10,false)
+    logger.info("************************CSP Count "+cspDF.count+ " and WebCount: "+sourceDFFiltered.count())
+
+
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\""+radiusTable+"\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
 

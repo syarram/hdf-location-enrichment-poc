@@ -36,7 +36,7 @@ object HouseKeepingMME {
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
     val locCatalog = HBaseCatalogs.mmecatalog(locationTable)
-    val controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
+    val controlCatalog = HBaseCatalogs.controlCatalog(webIpfrEnrichControl)
 
 
     val locationDF = (SparkUtils.reader(format, locCatalog)(spark))//.filter(col("userid_web").isNotNull)
