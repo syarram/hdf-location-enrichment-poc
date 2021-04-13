@@ -40,6 +40,8 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val deleteBatchSize = args(10).toInt*/
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
+    import spark.implicits._
+    spark.sparkContext.setLogLevel(logType)
 
     logger.info("**********************Argument/Variables*************************************")
     logger.info(s"locationTable=>$locationTable")
@@ -54,8 +56,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"enrichPath=>$enrichPath")
     logger.info("*********************Argument/Variables*************************************")
 
-    import spark.implicits._
-    spark.sparkContext.setLogLevel(logType)
+
 
     // Delete records from source Table if the previous run didnt finish successfully
     //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
