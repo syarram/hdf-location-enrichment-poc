@@ -14,4 +14,5 @@ csp_apn_lkp \
 stage_radius \
 INFO \
 100 \
-/data/web
+/data/web \
+webipfr_enrich_control
