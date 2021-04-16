@@ -75,20 +75,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))
     val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal ).cache()
 
-    val mmeCatalog = HBaseCatalogs.mmecatalog("\""+locationTable+"\"")
-    val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
-
-    val hadoopConf:Configuration = spark.sparkContext.hadoopConfiguration
-    val fs = FileSystem.get(hadoopConf)
-    val magnetPartition = Utils.getLastPartition(fs,magnetPath,magnetPathDate)
-    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
-      .dropDuplicates("lkey")
-    val deviceDBDF = Utils.readLZO(spark,deviceDBPath, "\t",Definitions.deviceDBSchema)
-
-    val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
-    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid")
-
-    cspDF.show(10,false)
     val webCount = sourceDFFiltered.count()
 
     if(webCount == 0)
@@ -97,10 +83,24 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       spark.stop()
     }
     else
-      logger.info("************************CSP Count "+cspDF.count+ " and WebCount: "+webCount)
+      logger.info("************************WebCount: "+webCount)
+
+    val mmeCatalog = HBaseCatalogs.mmecatalog("\""+locationTable+"\"")
+    val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
+
+    val hadoopConf:Configuration = spark.sparkContext.hadoopConfiguration
+    val fs = FileSystem.get(hadoopConf)
+    val magnetPartition = Utils.getLastPartition(fs,magnetPath,magnetPathDate)
+    val magnetDF = Utils.readLZO(spark,magnetPartition,"\t",Definitions.magnetSchema)
+      .dropDuplicates("lkey").cache()
+    val deviceDBDF = Utils.readLZO(spark,deviceDBPath, "\t",Definitions.deviceDBSchema).cache()
+
+    val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
+    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apn_name").cache()
+
 
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\""+radiusTable+"\"")
-    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
+    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark)).cache()
 
     val sourceDFWithLkey = sourceDFFiltered.filter(
       col("lkey_web").notEqual("Unknown") &&
