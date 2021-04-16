@@ -56,7 +56,7 @@ object HouseKeeping {
     }
 
     //read weblogs processed timestamp and derive to and from timestamp
-    val controlCatalog = HBaseCatalogs.webipfr_enrich_control("\""+controlTableName+"\"")
+    val controlCatalog = HBaseCatalogs.controlCatalog("\""+controlTableName+"\"")
     val webIpfrEnrichControlDF = SparkUtils.reader(format, controlCatalog)(spark)
     val streamProccessedTimeVal = SparkUtils.colValFromDF(webIpfrEnrichControlDF, "weblogs_batch_processed_ts")(spark)
     val deleteToTimeStamp = streamProccessedTimeVal.toLong - (deleteOlderThanHours*60*60*1000)

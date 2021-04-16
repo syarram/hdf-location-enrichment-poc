@@ -82,7 +82,7 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
-  def webipfr_enrich_control(table_name: String) = s"""{
+  def controlCatalog(table_name: String) = s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{

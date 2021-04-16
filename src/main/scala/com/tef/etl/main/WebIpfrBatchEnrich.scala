@@ -27,21 +27,20 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val logType = args(6)
     val hdfsPartitions = args(7).toInt
     val enrichPath = args(8)
+    val controlTable = args(9)
 
-/*    val transactionTableConnector = args(1)
-    val webIpfrEnrichControl = "\"" + args(2) + "\""
-    val webIpfrEnrichControlConnector = args(2)
-    val partitions = args(4).toInt
-    val hdfsPath = args(5)
-    val transactionTableKeys = "\"" + args(7) + "\""
-    val transactionTableKeysConnector = args(7)
-    val compressionFormat = args(8)
-    val hdfsFormat = args(9)
-    val deleteBatchSize = args(10).toInt*/
+    /*    val transactionTableConnector = args(1)
+        val webIpfrEnrichControl = "\"" + args(2) + "\""
+        val webIpfrEnrichControlConnector = args(2)
+        val partitions = args(4).toInt
+        val hdfsPath = args(5)
+        val transactionTableKeys = "\"" + args(7) + "\""
+        val transactionTableKeysConnector = args(7)
+        val compressionFormat = args(8)
+        val hdfsFormat = args(9)
+        val deleteBatchSize = args(10).toInt*/
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
-    import spark.implicits._
-    spark.sparkContext.setLogLevel(logType)
 
     logger.info("**********************Argument/Variables*************************************")
     logger.info(s"locationTable=>$locationTable")
@@ -54,9 +53,12 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"logType=>$logType")
     logger.info(s"hdfsPartitions=>$hdfsPartitions")
     logger.info(s"enrichPath=>$enrichPath")
+    logger.info(s"controlTable=>$controlTable")
+
     logger.info("*********************Argument/Variables*************************************")
 
-
+    import spark.implicits._
+    spark.sparkContext.setLogLevel(logType)
 
     // Delete records from source Table if the previous run didnt finish successfully
     //val transactionKeys = HBaseCatalogs.stageTrnsactionKeys(transactionTableKeys)
@@ -65,8 +67,13 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     // controlCatalog = HBaseCatalogs.webipfr_enrich_control(webIpfrEnrichControl)
     //tempStageKeysDelete(transactionTableKeysConnector, stageKeys)
 
+    val controlCatalog = HBaseCatalogs.controlCatalog("\""+controlTable+"\"")
+    val controlDF = SparkUtils.reader(format, controlCatalog)(spark)
+    val streamProccessedTimeVal = SparkUtils.colValFromDF(controlDF, "weblogs_stream_processed_ts")(spark)
+
     val webCatalog = HBaseCatalogs.stagewebcatalog("\""+transactionTable+"\"")
-    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark)).cache()
+    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))
+    val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal ).cache()
 
     val mmeCatalog = HBaseCatalogs.mmecatalog("\""+locationTable+"\"")
     val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
@@ -82,13 +89,20 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid")
 
     cspDF.show(10,false)
-    logger.info("************************CSP Count "+cspDF.count+ " and WebCount: "+sourceDFFiltered.count())
+    val webCount = sourceDFFiltered.count()
 
+    if(webCount == 0)
+    {
+      logger.error("************************ WebCount is Zero, Job will be terminated")
+      spark.stop()
+    }
+    else
+      logger.info("************************CSP Count "+cspDF.count+ " and WebCount: "+webCount)
 
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\""+radiusTable+"\"")
     val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark))
 
-    val sourceDFWithLkey = sourceDF.filter(
+    val sourceDFWithLkey = sourceDFFiltered.filter(
       col("lkey_web").notEqual("Unknown") &&
         col("lkey_web").notEqual("NoMatch"))
       .withColumnRenamed("lkey_web","lkey")
@@ -103,7 +117,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .mode(SaveMode.Append)
       .csv(enrichPath)
 
-    val sourceDFWithoutLkey = sourceDF.filter(col("lkey_web")==="Unknown" || col("lkey_web")==="NoMatch")
+    val sourceDFWithoutLkey = sourceDFFiltered.filter(col("lkey_web")==="Unknown" || col("lkey_web")==="NoMatch")
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithMMELkeyOtherTables,"WEB")
@@ -117,7 +131,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     val HbaseConf = HBaseConfiguration.create()
     val hbaseContext = new HBaseContext(spark.sparkContext, HbaseConf)
-    val keysDF = sourceDF.select(col("userid_web_seq"))
+    val keysDF = sourceDFFiltered.select(col("userid_web_seq"))
     keysDF.show(20, false)
     val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
     hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
@@ -166,65 +180,65 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       //    .mode(SaveMode.Append)
       .mode(SaveMode.Overwrite)
       .save(hdfsPath)*/
-/*
-    val onlyKeys = sourceDF//.limit(2000000)
-    val conf = HBaseConfiguration.create()
-    val hbaseContext = new HBaseContext(spark.sparkContext, conf)
-    val webBothDFsRDD = onlyKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
-    hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord =>
-      new Delete(deleteRecord),deleteBatchSize)*/
+    /*
+        val onlyKeys = sourceDF//.limit(2000000)
+        val conf = HBaseConfiguration.create()
+        val hbaseContext = new HBaseContext(spark.sparkContext, conf)
+        val webBothDFsRDD = onlyKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
+        hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord =>
+          new Delete(deleteRecord),deleteBatchSize)*/
 
 
- //--    println("****************************************** Source count: "+sourceDF.count()+", Location Count: "+locationDF.count)
+    //--    println("****************************************** Source count: "+sourceDF.count()+", Location Count: "+locationDF.count)
 
-  /*  val webIpfrEnrichControlDF = SparkUtils.reader(format, controlCatalog)(spark)
-    val streamProccessedTimeVal = SparkUtils.colValFromDF(webIpfrEnrichControlDF, "weblogs_stream_processed_ts")(spark)
+    /*  val webIpfrEnrichControlDF = SparkUtils.reader(format, controlCatalog)(spark)
+      val streamProccessedTimeVal = SparkUtils.colValFromDF(webIpfrEnrichControlDF, "weblogs_stream_processed_ts")(spark)
 
-    logger.info("***************************************"+sourceDF.count)
-    logger.error("***************************************"+sourceDF.count)
+      logger.info("***************************************"+sourceDF.count)
+      logger.error("***************************************"+sourceDF.count)
 
-    // Select Records based on Stream processed TimeStamp, records after streamprocessed timestamp should not be touched.
-    val sourceTSFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal ).cache  //&& (col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")
-    val sourceColList = sourceDF.schema.fieldNames
-
-
-
-    val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual("NoMatch"))
-    val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
-*/
- /*   val webJoinedDF =
-      sourceDFWithoutLkey
-        .join(locationDF, sourceDFWithoutLkey("userid_web") === locationDF("userid_mme") && locationDF("time_mme") <= sourceDFWithoutLkey("time_web") && sourceDFWithoutLkey("partition_web") === locationDF("partition_mme"),"left_outer")
-        .drop("lkey_web").withColumn("lkey_web", when(locationDF("lkey_mme").isNull,"NotFound").otherwise(locationDF("lkey_mme")))
-        .repartition(hdfsPartitions, col("userid_web"))
-        .sortWithinPartitions(col("userid_web_seq"),desc("time_mme"))
-        .dropDuplicates(Array("time_web","userid_web_seq"))
-        .select(sourceColList.head, sourceColList.tail:_*)//.drop("lkey_web")
+      // Select Records based on Stream processed TimeStamp, records after streamprocessed timestamp should not be touched.
+      val sourceTSFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal ).cache  //&& (col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")
+      val sourceColList = sourceDF.schema.fieldNames
 
 
-    val webBothDFs = webJoinedDF.union(sourceDFWithLkey)
-      .withColumn("dt", part_dt(col("time_web")))
-      .withColumn("hour", part_hour(col("time_web")))//.cache
 
-    val webBothDFsKeys = webBothDFs.select("userid_web_seq")
-*/
-//  webBothDFs.show(10,false)
- /*   webBothDFs
-      .repartition(hdfsPartitions)
-      .write.partitionBy("dt","hour","loc","csp")
-      .format(hdfsFormat)    // ***Issue here.....working fine for parquet
-      .option("compression", compressionFormat)
-      .mode(SaveMode.Append)
-      .save(hdfsPath)*/
+      val sourceDFWithLkey = sourceTSFiltered.filter(col("lkey_web").notEqual("unknown") && col("lkey_web").notEqual("NoMatch"))
+      val sourceDFWithoutLkey = sourceTSFiltered.filter(col("lkey_web") === "unknown" || col("lkey_web") === "NoMatch")//.cache
+  */
+    /*   val webJoinedDF =
+         sourceDFWithoutLkey
+           .join(locationDF, sourceDFWithoutLkey("userid_web") === locationDF("userid_mme") && locationDF("time_mme") <= sourceDFWithoutLkey("time_web") && sourceDFWithoutLkey("partition_web") === locationDF("partition_mme"),"left_outer")
+           .drop("lkey_web").withColumn("lkey_web", when(locationDF("lkey_mme").isNull,"NotFound").otherwise(locationDF("lkey_mme")))
+           .repartition(hdfsPartitions, col("userid_web"))
+           .sortWithinPartitions(col("userid_web_seq"),desc("time_mme"))
+           .dropDuplicates(Array("time_web","userid_web_seq"))
+           .select(sourceColList.head, sourceColList.tail:_*)//.drop("lkey_web")
 
 
-// Deleting Data from Source Transaction Table
- /*     val conf = HBaseConfiguration.create()
-      val hbaseContext = new HBaseContext(spark.sparkContext, conf)
-      val webBothDFsRDD = webBothDFsKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
-      hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord => new Delete(deleteRecord),4)
-*/
-// updating control table with timestamp
+       val webBothDFs = webJoinedDF.union(sourceDFWithLkey)
+         .withColumn("dt", part_dt(col("time_web")))
+         .withColumn("hour", part_hour(col("time_web")))//.cache
+
+       val webBothDFsKeys = webBothDFs.select("userid_web_seq")
+   */
+    //  webBothDFs.show(10,false)
+    /*   webBothDFs
+         .repartition(hdfsPartitions)
+         .write.partitionBy("dt","hour","loc","csp")
+         .format(hdfsFormat)    // ***Issue here.....working fine for parquet
+         .option("compression", compressionFormat)
+         .mode(SaveMode.Append)
+         .save(hdfsPath)*/
+
+
+    // Deleting Data from Source Transaction Table
+    /*     val conf = HBaseConfiguration.create()
+         val hbaseContext = new HBaseContext(spark.sparkContext, conf)
+         val webBothDFsRDD = webBothDFsKeys.select(col("userid_web_seq")).map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
+         hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTableConnector), deleteRecord => new Delete(deleteRecord),4)
+   */
+    // updating control table with timestamp
     /*    val config = HBaseConfiguration.create
         // instantiate HTable class
         val controlTable = new HTable(config, webIpfrEnrichControlConnector)
@@ -238,7 +252,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
 
 
-// add functionality of deleting data from stage_weblogs
+    // add functionality of deleting data from stage_weblogs
 
 
     /*lkeyupd
@@ -251,12 +265,12 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       .save(path)*/
 
     //spark.read.format("namesAndFavColors10").show(10,false)
-   /* spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header",false).csv("namesAndFavColors10")
-      .show(false)*/
+    /* spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header",false).csv("namesAndFavColors10")
+       .show(false)*/
 
-  //    Thread.sleep(1000000)
+    //    Thread.sleep(1000000)
 
-//--    println("**************************** SourceCount: "+  sourceDF.count()  +", Filtered Table Count: "+ sourceTSFiltered.count+", **** SourceWithLkey: "+ sourceDFWithLkey.count() +", **** SourceWithOutLkey: "+ sourceDFWithoutLkey.count() +", Control Table Count: "+webIpfrEnrichControlDF.count+", ************webBothDFs count: "+webBothDFs.count()+", streamProccessedTimeVal: "+"1597494981231")
+    //--    println("**************************** SourceCount: "+  sourceDF.count()  +", Filtered Table Count: "+ sourceTSFiltered.count+", **** SourceWithLkey: "+ sourceDFWithLkey.count() +", **** SourceWithOutLkey: "+ sourceDFWithoutLkey.count() +", Control Table Count: "+webIpfrEnrichControlDF.count+", ************webBothDFs count: "+webBothDFs.count()+", streamProccessedTimeVal: "+"1597494981231")
     spark.close()
   }
 
