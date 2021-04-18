@@ -96,7 +96,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val deviceDBDF = Utils.readLZO(spark,deviceDBPath, "\t",Definitions.deviceDBSchema).cache()
 
     val cspCatalog = HBaseCatalogs.cspCatalog("\""+cspTable+"\"")
-    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apn_name").cache()
+    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip","csp","apnid").cache()
 
 
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\""+radiusTable+"\"")
