@@ -37,13 +37,14 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
+  //we need APNName - apnid out of the catalog
   def cspCatalog(table_name:String): String = s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
       "ip":{"cf":"rowkey", "col":"key", "type":"string"},
-      "apn-name":{"cf":"cfcspapn", "col":"APN", "type":"string"},
-      "apnid":{"cf":"cfcspapn", "col":"APNName", "type":"string"},
+      "apn_name":{"cf":"cfcspapn", "col":"APN", "type":"string"},
+      "apn_id":{"cf":"cfcspapn", "col":"APNName", "type":"string"},
       "csp":{"cf":"cfcspapn", "col":"CSP", "type":"string"},
       "network":{"cf":"cfcspapn", "col":"Network", "type":"string"}
     }

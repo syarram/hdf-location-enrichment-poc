@@ -150,7 +150,7 @@ object TargetCatalog {
     "domain",
     "url",
     "query",
-    "apnid",
+    "apn_id",
     "sizetag",
     "flag",
     "conttype",

@@ -240,7 +240,7 @@ object Definitions {
     StructField("domain", StringType, nullable = true),
     StructField("url", StringType, nullable = true),
     StructField("query", StringType, nullable = true),
-    StructField("apnid", StringType, nullable = true),
+    StructField("apn_id", StringType, nullable = true),
     StructField("sizetag", StringType, nullable = true),
     StructField("flag", StringType, nullable = true),
     StructField("conttype", StringType, nullable = true),
