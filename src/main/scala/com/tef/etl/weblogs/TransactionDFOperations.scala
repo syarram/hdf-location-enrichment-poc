@@ -215,7 +215,8 @@ object TransactionDFOperations {
       .withColumn("conttype_1", when(
         split(col("contenttype"),"/")(0).equalTo("-"),"unknown")
         .otherwise(split(col("contenttype"),"/")(0)))
-      .withColumn("conttype", lit(split(col("contenttype"),"/")(1).toString().split(";")(0)))
+      .withColumn("conttype_tmp", split(col("contenttype"),"/")(1))
+      .withColumn("conttype",split(col("conttype_tmp"),";")(0)).drop("conttype_tmp")
       .withColumn("dmy", to_date(col("timestamp_src")))
       .withColumn("hh", date_format(col("timestamp_src"),"HH"))
       .withColumn("mm", minute(col("timestamp_src")))
@@ -231,6 +232,10 @@ object TransactionDFOperations {
           col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
+      .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
+      .withColumn("hour", col("hh"))
+      .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
+
   }
 
   def enrichTCPSL(df:DataFrame): DataFrame ={
@@ -249,40 +254,8 @@ object TransactionDFOperations {
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
 
-  /*
-  def enrichMME(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    df.join(lookupDF,df("userid_web")===lookupDF("userid_mme"),"left").drop(lookupDF("userid_mme"))
-  }
-
-  def enrichAPNID(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    df.join(lookupDF,df("clientip")===lookupDF("ip"),"left").
-      drop("ip","apn-name","network")
-  }
-
-  def enrichMagnet(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    val ldf = lookupDF.select("lkey",
-      "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
-      "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
-      "azimuth","enodeb_id","tac","ura")
-    df.join(ldf,df("lkey")===ldf("lkey"),"left").drop(ldf("lkey"))
-  }
-
-  def enrichDiviceDB(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    val ldf = lookupDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
-      "operating_system","device_type","offering")
-    df.join(ldf,df("userid_web")===ldf("emsisdn"),"left")
-  }
-
-  def enrichRadius(df:DataFrame, lookupDF:DataFrame):DataFrame={
-    val sDF = lookupDF.withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
-    val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
-    val rSDF = sDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
-    df.join(rSDF,df("sessionid")===rSDF("sesID"),"left").drop("rank","rkey","sesID")
-  }*/
-
   def getFinalDF(df:DataFrame):DataFrame={
-    val missingColumnsDF = df.withColumn("",lit("Null"))
-      .withColumn("calc_1",lit("Null"))
+    val missingColumnsDF = df.withColumn("calc_1",lit("Null"))
       .withColumn("calc_2",lit("Null"))
       .withColumn("calc_3",lit("Null"))
       .withColumn("calc_4",lit("Null"))
@@ -294,11 +267,6 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
-      .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
-      .withColumn("hour", col("hh"))
-      .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
-    //2020-09-14 09:45:00.310738
-
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
 
