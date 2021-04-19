@@ -232,6 +232,10 @@ object TransactionDFOperations {
           col("avgrtt") > 10 ,
         (col("avgbif")*8000).divide(col("avgrtt")*(col("pktretransrate")+1))
       ).otherwise(""))
+      .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
+      .withColumn("hour", col("hh"))
+      .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
+
   }
 
   def enrichTCPSL(df:DataFrame): DataFrame ={
@@ -263,10 +267,6 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
-      .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
-      .withColumn("hour", col("hh"))
-      .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
-
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
 

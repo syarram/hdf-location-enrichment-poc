@@ -110,7 +110,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithLkeyOtherTables,
       "WEB")
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
-
     transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
@@ -122,7 +121,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark,transWithMMELkeyOtherTables,"WEB")
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
-
     transWithMMELkeyOtherTablesExpandedFinal.write.partitionBy("dt","hour","loc","csp")
       .option("codec","com.hadoop.compression.lzo.LzopCodec")
       .option("delimiter","\t")
@@ -136,7 +134,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
     hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
     (deleteRecord),4)
-
 
     /*
         val withMMEDF = TransactionDFOperations.enrichMME(sourceDF,locationDF)
