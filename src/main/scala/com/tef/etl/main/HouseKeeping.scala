@@ -84,6 +84,7 @@ object HouseKeeping {
     put.add(Bytes.toBytes("cfEnrich"), Bytes.toBytes(controlColName), Bytes.toBytes(streamProccessedTimeVal))
     controlTable.put(put)
 
+    spark.stop()
   }
 
 }
