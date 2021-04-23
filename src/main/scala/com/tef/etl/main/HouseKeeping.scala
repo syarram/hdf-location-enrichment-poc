@@ -2,9 +2,9 @@ package com.tef.etl.main
 
 import com.tef.etl.SparkFuncs.SparkUtils
 import com.tef.etl.catalogs.HBaseCatalogs
-import org.apache.hadoop.hbase.client.{Delete, HTable, Put}
+import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.spark.HBaseContext
-import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
@@ -74,15 +74,9 @@ object HouseKeeping {
       hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(tableName), deleteRecord => new Delete(deleteRecord), deleteBatchSize)
     }
 
-    //update control table with latest timestamp
-    val config = HBaseConfiguration.create
-    // instantiate HTable class
-    val controlTable = new HTable(config, controlTableName)
-    // instantiate Put class
-    val put = new Put(Bytes.toBytes("1000000"))
-    // add values using add() method
-    put.add(Bytes.toBytes("cfEnrich"), Bytes.toBytes(controlColName), Bytes.toBytes(streamProccessedTimeVal))
-    controlTable.put(put)
+    //update control table
+    val cntlDF = webIpfrEnrichControlDF.withColumn("mme_deleted_ts",lit(streamProccessedTimeVal))
+    cntlDF.write.options(Map(HBaseTableCatalog.tableCatalog -> controlCatalog, HBaseTableCatalog.newTable -> "1000000")).format(format).save()
 
     spark.stop()
   }
