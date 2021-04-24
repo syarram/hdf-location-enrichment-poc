@@ -92,7 +92,10 @@ object HBaseCatalogs {
       "weblogs_batch_processed_ts":{"cf":"cfEnrich", "col":"weblogs_batch_processed_ts", "type":"string"},
       "weblogs_batch_processed_systime":{"cf":"cfEnrich", "col":"weblogs_batch_processed_systime", "type":"string"},
       "mme_deleted_systime":{"cf":"cfEnrich", "col":"mme_deleted_systime", "type":"string"},
-      "mme_deleted_ts":{"cf":"cfEnrich", "col":"mme_deleted_ts", "type":"string"}
+      "mme_deleted_ts":{"cf":"cfEnrich", "col":"mme_deleted_ts", "type":"string"},
+      "batch_job_status":{"cf":"cfEnrich", "col":"batch_job_status", "type":"string"},
+      "mme_delete_job_status":{"cf":"cfEnrich", "col":"mme_delete_job_status", "type":"string"},
+      "radius_delete_job_status":{"cf":"cfEnrich", "col":"radius_delete_job_status", "type":"string"}
     }
   }""".stripMargin
 

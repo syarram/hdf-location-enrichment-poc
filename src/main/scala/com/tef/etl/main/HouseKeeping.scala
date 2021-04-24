@@ -2,6 +2,7 @@ package com.tef.etl.main
 
 import com.tef.etl.SparkFuncs.SparkUtils
 import com.tef.etl.catalogs.HBaseCatalogs
+import com.tef.etl.weblogs.Utils
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
@@ -18,7 +19,7 @@ object HouseKeeping {
 
     val format = "org.apache.spark.sql.execution.datasources.hbase"
     val tableName = args(0)
-    val catalogName = args(1)
+    val processName = args(1)
     val controlTableName = args(2)
     val logType = args(3)
     val deleteBatchSize = args(4).toInt
@@ -31,7 +32,7 @@ object HouseKeeping {
 
     logger.info("**********************Argument/Variables*************************************")
     logger.info(s"tableName=>$tableName")
-    logger.info(s"catalogName=>$catalogName")
+    logger.info(s"processName=>$processName")
     logger.info(s"controlTableName=>$controlTableName")
     logger.info(s"logType=>$logType")
     logger.info(s"deleteBatchSize=>$deleteBatchSize")
@@ -42,30 +43,55 @@ object HouseKeeping {
     var tableCatalog = ""
     var keyColumnName = ""
     var controlColName = ""
-    if(catalogName.equals("MME")) {
+    var processColName = ""
+    if(processName.equals("MME")) {
       tableCatalog = HBaseCatalogs.mmecatalog("\""+tableName+"\"")
       keyColumnName = "userid_mme_seq"
       controlColName = "mme_deleted_ts"
-    }else if(catalogName.equals("Radius")){
+      processColName = "mme_delete_job_status"
+    }else if(processName.equals("Radius")){
       tableCatalog = HBaseCatalogs.stageRadiusCatalog("\""+tableName+"\"")
       keyColumnName = "rkey"
       controlColName = "radius_deleted_ts"
+      processColName = "radius_delete_job_status"
     }else {
-      logger.error(s"catalogName=>$catalogName doesn't exists or doesn't match criteria")
+      logger.error(s"processName=>$processName doesn't exists or doesn't match criteria")
       spark.stop()
+      spark.close()
     }
 
     //read weblogs processed timestamp and derive to and from timestamp
     val controlCatalog = HBaseCatalogs.controlCatalog("\""+controlTableName+"\"")
-    val webIpfrEnrichControlDF = SparkUtils.reader(format, controlCatalog)(spark)
-    val streamProccessedTimeVal = SparkUtils.colValFromDF(webIpfrEnrichControlDF, "weblogs_batch_processed_ts")(spark)
-    val deleteToTimeStamp = streamProccessedTimeVal.toLong - (deleteOlderThanHours*60*60*1000)
+    val controlDF = SparkUtils.reader(format, controlCatalog)(spark).cache()
+    val processStatus = SparkUtils.colValFromDF(controlDF, processColName)(spark)
+    if(processStatus.equals("InProgress")){
+      logger.error(s"$processName process is still in progress")
+      spark.stop()
+      spark.close()
+    }else{
+      val updatedCntlDF = controlDF.withColumn(processColName,lit("InProgress"))
+      Utils.updateHbaseColumn(controlCatalog,updatedCntlDF)
+    }
+
+    val batchProccessedTimeVal = SparkUtils.colValFromDF(controlDF, "weblogs_batch_processed_ts")(spark)
+    val deleteToTimeStamp = batchProccessedTimeVal.toLong - (deleteOlderThanHours*60*60*1000)
     val deleteFromTimeStamp = deleteToTimeStamp - (5*24*60*60*1000)
 
     //Get primary keys for given time range
     val timeRangeDF = SparkUtils.mmeReader(format,tableCatalog, deleteFromTimeStamp.toString, deleteToTimeStamp.toString)(spark)
     val timeRangeKeys = timeRangeDF.select(col(keyColumnName))
-    logger.debug("******************************** Count of Records"+ timeRangeKeys.count)
+    val timeRangeCnt = timeRangeKeys.count
+    if(timeRangeCnt == 0)
+    {
+      logger.error("************************ Time range count is Zero, Job will be terminated")
+      val updatedCntlDF = controlDF.withColumn(controlColName,lit(batchProccessedTimeVal))
+        .withColumn(processColName,lit("Completed"))
+      Utils.updateHbaseColumn(controlCatalog,updatedCntlDF)
+      spark.stop
+      spark.close
+    }
+    else
+      logger.info("************************Web Time range count is: "+timeRangeCnt)
 
     if(runDeleFlag) {
       val conf = HBaseConfiguration.create()
@@ -74,11 +100,11 @@ object HouseKeeping {
       hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(tableName), deleteRecord => new Delete(deleteRecord), deleteBatchSize)
     }
 
-    //update control table
-    val cntlDF = webIpfrEnrichControlDF.withColumn("mme_deleted_ts",lit(streamProccessedTimeVal))
-    cntlDF.write.options(Map(HBaseTableCatalog.tableCatalog -> controlCatalog, HBaseTableCatalog.newTable -> "1000000")).format(format).save()
+    val updatedCntlDF = controlDF.withColumn(controlColName,lit(batchProccessedTimeVal))
+      .withColumn(processColName,lit("Completed"))
+    Utils.updateHbaseColumn(controlCatalog,updatedCntlDF)
 
-    spark.stop()
+    spark.close()
   }
 
 }

@@ -1,6 +1,10 @@
 package com.tef.etl.weblogs
 
+import com.tef.etl.SparkFuncs.SparkUtils
+import com.tef.etl.catalogs.HBaseCatalogs
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -41,6 +45,14 @@ object Utils {
       cal.setTime(currentDate)
     cal.add(Calendar.DATE,-1)
     date.format (cal.getTime)
+  }
+
+  def updateHbaseColumn(catalog:String,controlDF:DataFrame): Unit ={
+    controlDF.
+      write.
+      options(Map(HBaseTableCatalog.tableCatalog -> catalog, HBaseTableCatalog.newTable -> "10"))
+      .format("org.apache.spark.sql.execution.datasources.hbase")
+      .save()
   }
 
 }

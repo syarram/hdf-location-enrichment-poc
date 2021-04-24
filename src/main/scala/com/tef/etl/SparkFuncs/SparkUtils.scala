@@ -1,19 +1,12 @@
 package com.tef.etl.SparkFuncs
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
-import java.util.Date
-import java.text.SimpleDateFormat
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.execution.datasources.hbase._
-import org.apache.spark.sql.DataFrameReader
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.SaveMode
-import org.apache.hadoop.hbase.ipc.HBaseRPCErrorHandler
-import org.apache.hadoop.hbase.client.HBaseAdmin
-import org.apache.spark.sql.execution.datasources.hbase.HBaseRegion
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
+
+import java.text.SimpleDateFormat
 
 /**
  * @author Mohamed Bilal S
@@ -242,9 +235,7 @@ object SparkUtils {
   }
 */
   def colValFromDF(df :DataFrame, colName: String)(implicit spark: SparkSession) : String = {
-    df.show(10,false)
     val maxValue = df.select(colName).collectAsList().get(0).getString(0)
-    println("********************"+maxValue)
     maxValue
   }
 
