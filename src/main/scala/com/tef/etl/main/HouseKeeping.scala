@@ -64,7 +64,7 @@ object HouseKeeping {
     val controlCatalog = HBaseCatalogs.controlCatalog("\""+controlTableName+"\"")
     val controlDF = SparkUtils.reader(format, controlCatalog)(spark).cache()
     val processStatus = SparkUtils.colValFromDF(controlDF, processColName)(spark)
-    if(processStatus.equals("InProgress")){
+    if(processStatus != null && processStatus.equals("InProgress")){
       logger.error(s"$processName process is still in progress")
       spark.stop()
       spark.close()
