@@ -4,9 +4,10 @@ package com.tef.etl.catalogs
  *
  */
 object HBaseCatalogs {
-  
+
   /* Schema build for Web table*/
-  def stagewebcatalog(table_name: String) = s"""{
+  def stagewebcatalog(table_name: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -22,7 +23,8 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
-  def stageRadiusCatalog(table_name: String) =s"""{
+  def stageRadiusCatalog(table_name: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -37,7 +39,8 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
-  def cspCatalog(table_name:String): String = s"""{
+  def cspCatalog(table_name: String): String =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -50,7 +53,8 @@ object HBaseCatalogs {
   }""".stripMargin
 
 
-  def stageTrnsactionKeys(table_name: String) = s"""{
+  def stageTrnsactionKeys(table_name: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -60,7 +64,8 @@ object HBaseCatalogs {
 
 
   /* Schema build for MME table*/
-    def mmecatalog(table_name: String) = s"""{
+  def mmecatalog(table_name: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -73,7 +78,8 @@ object HBaseCatalogs {
   }""".stripMargin
 
   /* Schema build for MME table*/
-  def timeStampCatalog(table_name: String,colfam: String, column: String) = s"""{
+  def timeStampCatalog(table_name: String, colfam: String, column: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -82,7 +88,8 @@ object HBaseCatalogs {
     }
   }""".stripMargin
 
-  def controlCatalog(table_name: String) = s"""{
+  def controlCatalog(table_name: String) =
+    s"""{
     "table":{"namespace":"default", "name":${table_name}},
     "rowkey":"key",
     "columns":{
@@ -98,5 +105,28 @@ object HBaseCatalogs {
       "radius_delete_job_status":{"cf":"cfEnrich", "col":"radius_delete_job_status", "type":"string"}
     }
   }""".stripMargin
+
+  def houseKeepingCatalog(table_name: String, processName: String):String = {
+    processName match{
+     case "MME" => s"""{
+        "table":{"namespace":"default", "name":${table_name}},
+        "rowkey":"key",
+        "columns":{
+          "control_key":{"cf":"rowkey", "col":"key", "type":"string"},
+          "mme_deleted_ts":{"cf":"cfEnrich", "col":"mme_deleted_ts", "type":"string"},
+          "mme_delete_job_status":{"cf":"cfEnrich", "col":"mme_delete_job_status", "type":"string"}
+        }
+      }""".stripMargin
+     case "Radius" => s"""{
+        "table":{"namespace":"default", "name":${table_name}},
+        "rowkey":"key",
+        "columns":{
+          "control_key":{"cf":"rowkey", "col":"key", "type":"string"},
+          "radius_deleted_ts":{"cf":"cfEnrich", "col":"radius_deleted_ts", "type":"string"},
+          "radius_delete_job_status":{"cf":"cfEnrich", "col":"radius_delete_job_status", "type":"string"}
+        }
+      }""".stripMargin
+    }
+  }
 
 }
