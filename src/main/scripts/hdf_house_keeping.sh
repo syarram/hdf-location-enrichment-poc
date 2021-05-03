@@ -20,7 +20,7 @@ control_table=webipfr_enrich_control
 log_type=INFO
 delete_batch_size=10000000
 delete_flag=true
-log_date=`date +%d%m%Y%H%M%S`
+log_date=`date +%d%m%Y_%H%M%S`
 log_dir=/home/yarrams1/ipfr-load/logs
 
 
@@ -31,7 +31,7 @@ spark-submit \
 --driver-memory 15g \
 --executor-memory 10g \
 --conf spark.sql.shuffle.partitions=200 \
---jars /home/yarrams1/ipfr-load/jars/shc-core-1.1.1-2.1-s_2.11.jar,/usr/hdp/current/hbase-client/lib/* \
+--jars /home/yarrams1/ipfr-load/jars/shc-core-1.1.1-2.1-s_2.11.jar,/home/yarrams1/ipfr-load/jars/hbase-spark-1.0.0.jar,/usr/hdp/current/hbase-client/lib/* \
 --files /usr/hdp/current/hbase-client/conf/hbase-site.xml,/etc/hadoop/conf/core-site.xml \
 --class com.tef.etl.main.HouseKeeping /home/yarrams1/ipfr-load/etl_batch-0.1.jar \
 ${table_name} \
