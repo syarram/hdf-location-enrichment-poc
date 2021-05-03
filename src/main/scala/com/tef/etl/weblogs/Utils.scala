@@ -1,10 +1,7 @@
 package com.tef.etl.weblogs
 
-import com.tef.etl.SparkFuncs.SparkUtils
-import com.tef.etl.catalogs.HBaseCatalogs
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
-import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 

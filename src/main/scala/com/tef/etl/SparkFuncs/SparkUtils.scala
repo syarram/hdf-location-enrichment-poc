@@ -74,12 +74,12 @@ object SparkUtils {
   }
 
 
-  def mmeReader(format: String, catalog: String, min: String, max: String)(implicit spark: SparkSession) =
+  def hbaseTimestampReader(format: String, catalog: String, min: String, max: String)(implicit spark: SparkSession) =
   {
     spark
       .read
       .option(HBaseTableCatalog.tableCatalog, catalog)
-          .option(HBaseRelation.MIN_STAMP,min)
+      .option(HBaseRelation.MIN_STAMP,min)
       .option(HBaseRelation.MAX_STAMP,max)
       .format(format)
       .load()
