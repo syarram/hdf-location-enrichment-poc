@@ -126,6 +126,15 @@ object HBaseCatalogs {
           "radius_delete_job_status":{"cf":"cfEnrich", "col":"radius_delete_job_status", "type":"string"}
         }
       }""".stripMargin
+     case "Web" => s"""{
+        "table":{"namespace":"default", "name":${table_name}},
+        "rowkey":"key",
+        "columns":{
+          "control_key":{"cf":"rowkey", "col":"key", "type":"string"},
+          "weblogs_batch_processed_ts":{"cf":"cfEnrich", "col":"weblogs_batch_processed_ts", "type":"string"},
+          "batch_job_status":{"cf":"cfEnrich", "col":"batch_job_status", "type":"string"}
+        }
+      }""".stripMargin
     }
   }
 

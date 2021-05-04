@@ -50,17 +50,20 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     import spark.implicits._
     spark.sparkContext.setLogLevel(logType)
 
-    val controlCatalog = HBaseCatalogs.controlCatalog("\"" + controlTable + "\"")
-    val controlDF = SparkUtils.reader(format, controlCatalog)(spark).cache()
-    val batchStatus = SparkUtils.colValFromDF(controlDF, "batch_job_status")(spark)
+    val houseKeepingCtlCtlg = HBaseCatalogs.houseKeepingCatalog("\""+controlTable+"\"","Web")
+    val hkCntrlDF = SparkUtils.reader(format, houseKeepingCtlCtlg)(spark).cache()
+    val batchStatus = SparkUtils.colValFromDF(hkCntrlDF, "batch_job_status")(spark)
     if (batchStatus.equals("InProgress")) {
       logger.error("************************ Batch job in progress, Job will be terminated")
       spark.stop
       spark.close
     } else {
-      val updatedCntlDF = controlDF.withColumn("batch_job_status", lit("InProgress"))
-      Utils.updateHbaseColumn(controlCatalog,updatedCntlDF)
+      val updatedCntlDF = hkCntrlDF.withColumn("batch_job_status", lit("InProgress"))
+      Utils.updateHbaseColumn(houseKeepingCtlCtlg,updatedCntlDF)
     }
+
+    val controlCatalog = HBaseCatalogs.controlCatalog("\"" + controlTable + "\"")
+    val controlDF = SparkUtils.reader(format, controlCatalog)(spark).cache()
     val streamProccessedTimeVal = SparkUtils.colValFromDF(controlDF, "weblogs_stream_processed_ts")(spark)
 
     val webCatalog = HBaseCatalogs.stagewebcatalog("\"" + transactionTable + "\"")
@@ -72,10 +75,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     if (webCount == 0) {
       logger.error("************************ WebCount is Zero, Job will be terminated")
       //update timetamp & status
-      val updatedCntlDF = controlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
+      val updatedCntlDF = hkCntrlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
         .withColumn("batch_job_status", lit("Completed"))
-      Utils.updateHbaseColumn(controlCatalog, updatedCntlDF)
-
+      Utils.updateHbaseColumn(houseKeepingCtlCtlg, updatedCntlDF)
       spark.stop
       spark.close
     }
@@ -133,9 +135,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     //Update weblogs_batch_processed_ts with weblogs_stream_processed_ts
 
-    val updatedCntlDF = controlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
+    val updatedCntlDF = hkCntrlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
       .withColumn("batch_job_status", lit("Completed"))
-    Utils.updateHbaseColumn(controlCatalog, updatedCntlDF)
+    Utils.updateHbaseColumn(houseKeepingCtlCtlg, updatedCntlDF)
 
     spark.close()
   }
