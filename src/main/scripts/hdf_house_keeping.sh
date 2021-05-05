@@ -11,9 +11,9 @@ older_hours=${2}
 echo "*************Params passed: ${catalog} and ${older_hours} "
 
 if [ ${catalog} == "MME" ]; then
-table_name=stage_mme_20210415_bkp
+table_name=stage_mme
 else
-table_name=stage_radius_20210415_bkp
+table_name=stage_radius
 fi
 
 control_table=webipfr_enrich_control
@@ -40,4 +40,4 @@ ${control_table} \
 ${log_type} \
 ${delete_batch_size} \
 ${older_hours} \
-${delete_flag} >> $log_dir/spark_job_hdf_house_keeping_$log_date.log 2>&1 &
+${delete_flag} >> $log_dir/spark_job_hdf_house_keeping_${catalog}_$log_date.log 2>&1 &

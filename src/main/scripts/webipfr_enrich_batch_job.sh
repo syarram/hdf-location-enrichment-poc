@@ -34,4 +34,4 @@ ${radius_table} \
 INFO \
 100 \
 ${hdfs_enrichment} \
-${control_table} >> $log_dir/spark_job_trigger_$log_date.log 2>&1 &
+${control_table} >> $log_dir/spark_web_batch_job_$log_date.log 2>&1 &
