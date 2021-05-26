@@ -1,6 +1,5 @@
 package com.tef.etl.main
 
-import com.tef.etl.SparkFuncs.SparkUtils
 import com.tef.etl.catalogs.HBaseCatalogs
 import com.tef.etl.weblogs.Utils
 import org.apache.hadoop.hbase.client.Delete
@@ -10,6 +9,11 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.slf4j.LoggerFactory
 
+/**
+ * This HouseKeeping job is for MME and Radius Hbase tables
+ * This job deletes all the row in given table for given time
+ * and updates status and time in control table
+ */
 object HouseKeeping {
 
   def main(args: Array[String]): Unit = {
@@ -61,8 +65,8 @@ object HouseKeeping {
     }
 
     val houseKeepingCtlCtlg = HBaseCatalogs.houseKeepingCatalog("\""+controlTableName+"\"",processName)
-    val ctrlProcessDF = SparkUtils.reader(format, houseKeepingCtlCtlg)(spark).cache()
-    val processStatus = SparkUtils.colValFromDF(ctrlProcessDF, processColName)(spark)
+    val ctrlProcessDF = Utils.reader(format, houseKeepingCtlCtlg)(spark).cache()
+    val processStatus = Utils.colValFromDF(ctrlProcessDF, processColName)(spark)
 
     if(processStatus != null && processStatus.equals("InProgress")){
       logger.error(s"$processName process is still in progress")
@@ -76,8 +80,8 @@ object HouseKeeping {
     }
 
     val ctrlCatalog = HBaseCatalogs.controlCatalog("\""+controlTableName+"\"")
-    val ctrlDF= SparkUtils.reader(format, ctrlCatalog)(spark).cache()
-    val batchProccessedTimeVal = SparkUtils.colValFromDF(ctrlDF, "weblogs_batch_processed_ts")(spark)
+    val ctrlDF= Utils.reader(format, ctrlCatalog)(spark).cache()
+    val batchProccessedTimeVal = Utils.colValFromDF(ctrlDF, "weblogs_batch_processed_ts")(spark)
     val deleteToTimeStamp = batchProccessedTimeVal.toLong - (deleteOlderThanHours*60*60*1000)
     val deleteFromTimeStamp = deleteToTimeStamp - (5*24*60*60*1000)
 
@@ -85,7 +89,7 @@ object HouseKeeping {
       s"deleteFromTimeStamp=$deleteFromTimeStamp")
 
     //Get primary keys for given time range
-    val timeRangeDF = SparkUtils.hbaseTimestampReader(format,tableCatalog, deleteFromTimeStamp.toString, deleteToTimeStamp.toString)(spark)
+    val timeRangeDF = Utils.hbaseTimestampReader(format,tableCatalog, deleteFromTimeStamp.toString, deleteToTimeStamp.toString)(spark)
     val timeRangeKeys = timeRangeDF.select(col(keyColumnName))
     val timeRangeCnt = timeRangeKeys.count
     if(timeRangeCnt == 0)

@@ -2,6 +2,9 @@ package com.tef.etl.model
 
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
+/**
+ * This object has schema definitions for magnet, devicedb and final output
+ */
 object Definitions {
   val magnetSchema:StructType = StructType(Array(
   StructField("csr", StringType, nullable = true),

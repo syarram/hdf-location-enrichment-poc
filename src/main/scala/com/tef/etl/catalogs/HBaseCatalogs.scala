@@ -1,11 +1,11 @@
 package com.tef.etl.catalogs
-/* @author Mohamed Bilal
 
- *
+/**
+ * This Object has hbase table catalogs for Web structured streaming,
+ * radius, csp, mme and control tables
  */
 object HBaseCatalogs {
 
-  /* Schema build for Web table*/
   def stagewebcatalog(table_name: String) =
     s"""{
     "table":{"namespace":"default", "name":${table_name}},

@@ -7,6 +7,13 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object TransactionDFOperations {
 
+  /**
+   * This method expands the single line delimited string to multiple columns and returns dateframe.
+   * @param spark
+   * @param df
+   * @param fileType
+   * @return
+   */
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
     val df1 = //df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
       df.withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
@@ -238,6 +245,11 @@ object TransactionDFOperations {
 
   }
 
+  /**
+   * This method enrich TCPSL data
+   * @param df
+   * @return
+   */
   def enrichTCPSL(df:DataFrame): DataFrame ={
     df.withColumn("minrtt",
       when (split(col("src_tcpsl"),"/")(0).equalTo("-"), null).
@@ -254,6 +266,11 @@ object TransactionDFOperations {
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
   }
 
+  /**
+   * This method add all missing columns to null value
+   * @param df
+   * @return
+   */
   def getFinalDF(df:DataFrame):DataFrame={
     val missingColumnsDF = df.withColumn("calc_1",lit("Null"))
       .withColumn("calc_2",lit("Null"))
@@ -272,7 +289,15 @@ object TransactionDFOperations {
 
   }
 
-
+  /**
+   * This method joins magnet, devicedb, csp, radius data to web transactions and returns enriched dataframe.
+   * @param trasactionDF
+   * @param magnetDF
+   * @param deviceDBDF
+   * @param cspDF
+   * @param radiusSRCDF
+   * @return
+   */
   def joinForLookUps(trasactionDF: DataFrame, magnetDF: DataFrame, deviceDBDF: DataFrame, cspDF: DataFrame, radiusSRCDF: DataFrame): DataFrame = {
 
     val magnetSpecificColsDF = magnetDF.select("lkey",
@@ -292,6 +317,13 @@ object TransactionDFOperations {
       .withColumnRenamed("userid_web","emsisdn")
   }
 
+  /**
+   * This Method joins web transactions to mme data and returns enriched dataframe.
+   * @param sourceDFWithoutLkey
+   * @param locationDF
+   * @param hdfsPartitions
+   * @return
+   */
   def joinWithMME(sourceDFWithoutLkey: DataFrame,locationDF: DataFrame, hdfsPartitions: Int): DataFrame = {
     sourceDFWithoutLkey
       .join(locationDF,

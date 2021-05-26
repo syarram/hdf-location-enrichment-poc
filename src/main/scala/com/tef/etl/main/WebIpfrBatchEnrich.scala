@@ -1,6 +1,6 @@
 package com.tef.etl.main
 
-import com.tef.etl.SparkFuncs.{SparkSessionTrait, SparkUtils}
+import com.tef.etl.SparkFuncs.SparkSessionTrait
 import com.tef.etl.catalogs.HBaseCatalogs
 import com.tef.etl.model.Definitions
 import com.tef.etl.weblogs.{TransactionDFOperations, Utils}
@@ -13,6 +13,14 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.functions._
 import org.slf4j.LoggerFactory
 
+/**
+ * This spark job Filter records that are not processed by Structured Stream based on WeblogsStreamProcessedTS.
+ * and For records where Lkey not populated, join with MME table and populates LKey.
+ * This job also extract columns string and populate individual columns for all records.
+ * Then it Insert Fully enriched records to HDFS.
+ * After successful insert to HDFS, delete those records in HBASE Weblogs table
+ * After successful delete, delete data from WeblogsTemp table.
+ */
 object WebIpfrBatchEnrich extends SparkSessionTrait {
 
   def main(args: Array[String]): Unit = {
@@ -44,15 +52,14 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"hdfsPartitions=>$hdfsPartitions")
     logger.info(s"enrichPath=>$enrichPath")
     logger.info(s"controlTable=>$controlTable")
-
     logger.info("*********************Argument/Variables*************************************")
 
     import spark.implicits._
     spark.sparkContext.setLogLevel(logType)
 
     val houseKeepingCtlCtlg = HBaseCatalogs.houseKeepingCatalog("\""+controlTable+"\"","Web")
-    val hkCntrlDF = SparkUtils.reader(format, houseKeepingCtlCtlg)(spark).cache()
-    val batchStatus = SparkUtils.colValFromDF(hkCntrlDF, "batch_job_status")(spark)
+    val hkCntrlDF = Utils.reader(format, houseKeepingCtlCtlg)(spark).cache()
+    val batchStatus = Utils.colValFromDF(hkCntrlDF, "batch_job_status")(spark)
     if (batchStatus.equals("InProgress")) {
       logger.error("************************ Batch job in progress, Job will be terminated")
       spark.stop
@@ -63,11 +70,11 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     }
 
     val controlCatalog = HBaseCatalogs.controlCatalog("\"" + controlTable + "\"")
-    val controlDF = SparkUtils.reader(format, controlCatalog)(spark).cache()
-    val streamProccessedTimeVal = SparkUtils.colValFromDF(controlDF, "weblogs_stream_processed_ts")(spark)
+    val controlDF = Utils.reader(format, controlCatalog)(spark).cache()
+    val streamProccessedTimeVal = Utils.colValFromDF(controlDF, "weblogs_stream_processed_ts")(spark)
 
     val webCatalog = HBaseCatalogs.stagewebcatalog("\"" + transactionTable + "\"")
-    val sourceDF = (SparkUtils.reader(format, webCatalog)(spark))
+    val sourceDF = (Utils.reader(format, webCatalog)(spark))
     val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal).cache()
 
     val webCount = sourceDFFiltered.count()
@@ -84,7 +91,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     else logger.info("************************WebCount: " + webCount)
 
     val mmeCatalog = HBaseCatalogs.mmecatalog("\"" + locationTable + "\"")
-    val locationDF = SparkUtils.reader(format, mmeCatalog)(spark)
+    val locationDF = Utils.reader(format, mmeCatalog)(spark)
 
     val hadoopConf: Configuration = spark.sparkContext.hadoopConfiguration
     val fs = FileSystem.get(hadoopConf)
@@ -94,11 +101,11 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val deviceDBDF = Utils.readLZO(spark, deviceDBPath, "\t", Definitions.deviceDBSchema).cache()
 
     val cspCatalog = HBaseCatalogs.cspCatalog("\"" + cspTable + "\"")
-    val cspDF = (SparkUtils.reader(format, cspCatalog)(spark)).select("ip", "csp", "apnid").cache()
+    val cspDF = (Utils.reader(format, cspCatalog)(spark)).select("ip", "csp", "apnid").cache()
 
 
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"" + radiusTable + "\"")
-    val radiusSRCDF = (SparkUtils.reader(format, RadiusCatalog)(spark)).cache()
+    val radiusSRCDF = (Utils.reader(format, RadiusCatalog)(spark)).cache()
     //Filter all rows with empty or null nonlkey_cols value
     val srcFilteredDF = sourceDFFiltered.filter(col("nonlkey_cols").isNotNull)
     logger.info(s"********************number of records with nonlkey_cols ${srcFilteredDF.count()}")

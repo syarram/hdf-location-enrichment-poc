@@ -12,5 +12,4 @@ trait SparkSessionTrait {
     .builder()
     .appName("HBASE WEB")
     .getOrCreate()
-
 }
