@@ -47,7 +47,7 @@ object HBaseCatalogs {
       "ip":{"cf":"rowkey", "col":"key", "type":"string"},
       "apn_name":{"cf":"cfcspapn", "col":"apn", "type":"string"},
       "apnid":{"cf":"cfcspapn", "col":"apn-name", "type":"string"},
-      "csp":{"cf":"cfcspapn", "col":"csp", "type":"str  ing"},
+      "csp":{"cf":"cfcspapn", "col":"csp", "type":"string"},
       "network":{"cf":"cfcspapn", "col":"network", "type":"string"}
     }
   }""".stripMargin
