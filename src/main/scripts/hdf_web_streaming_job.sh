@@ -23,11 +23,11 @@ fi
 
 hdf_home=/app/hdf_a2
 control_table=webipfr_enrich_control
-target_table=stage_weblogs
+target_table=stage_weblogs_20210513
 log_type=ERROR
-trans_topic=stageweblogsa2
-location_topic=stagemmea2
-max_executors=40
+trans_topic=weblogs20210513
+location_topic=mme20210513
+max_executors=300
 min_executors=30
 log_date=`date +%d%m%Y_%H%M%S`
 log_dir=$hdf_home/logs
@@ -42,7 +42,7 @@ ${hdf_home}/ipfr-enrichment-1.0-SNAPSHOT.jar --ipfr-topic ${trans_topic} --ipfr-
 --mme-topic ${location_topic} --mme-starting-offset ${offset_read} \
 --kafka-bootstrap-servers ${kafka_bootstrap} \
 --error-logging ERROR --aggregation-window-time 15 --join-window-time 15 --mme-water-mark 15 --ipfr-water-mark 15 \
---target-table stage_weblogs \
+--target-table ${target_table} \
 --loc-kafka-offsets-trigger 40000000 \
 --trans-kafka-offsets-trigger 20000000 \
 --hbase-zookeeper-quorum ${hbase_quorum}  \

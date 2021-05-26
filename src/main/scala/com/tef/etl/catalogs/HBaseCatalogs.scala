@@ -45,10 +45,10 @@ object HBaseCatalogs {
     "rowkey":"key",
     "columns":{
       "ip":{"cf":"rowkey", "col":"key", "type":"string"},
-      "apn_name":{"cf":"cfcspapn", "col":"APN", "type":"string"},
-      "apnid":{"cf":"cfcspapn", "col":"APNName", "type":"string"},
-      "csp":{"cf":"cfcspapn", "col":"CSP", "type":"string"},
-      "network":{"cf":"cfcspapn", "col":"Network", "type":"string"}
+      "apn_name":{"cf":"cfcspapn", "col":"apn", "type":"string"},
+      "apnid":{"cf":"cfcspapn", "col":"apn-name", "type":"string"},
+      "csp":{"cf":"cfcspapn", "col":"csp", "type":"str  ing"},
+      "network":{"cf":"cfcspapn", "col":"network", "type":"string"}
     }
   }""".stripMargin
 

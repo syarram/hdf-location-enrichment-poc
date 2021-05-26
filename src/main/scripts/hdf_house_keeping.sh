@@ -11,9 +11,9 @@ older_hours=${2}
 echo "*************Params passed: ${catalog} and ${older_hours} "
 
 if [ ${catalog} == "MME" ]; then
-table_name=stage_mme
+table_name=stage_mme_20210513
 else
-table_name=stage_radius
+table_name=stage_radius_20210513
 fi
 
 control_table=webipfr_enrich_control

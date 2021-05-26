@@ -2,11 +2,11 @@
 
 yday=`date -d yesterday '+%Y%m%d'`
 
-location_table=stage_mme
-transaction_table=stage_weblogs
-radius_table=stage_radius
-hdfs_magnet=/data/magnet/dt=20200427
-hdfs_devicedb=/user/yarrams1/data/DeviceDB/dt=20210107
+location_table=stage_mme_20210513
+transaction_table=stage_weblogs_20210513
+radius_table=stage_radius_20210513
+hdfs_magnet=/data/magnet/dt=20210512
+hdfs_devicedb=/user/yarrams1/data/DeviceDB/dt=20210512
 hdfs_enrichment=/data/a2/web_a2/
 csp_table=csp_apn_lkp
 control_table=webipfr_enrich_control
