@@ -204,7 +204,7 @@ object TransactionDFOperations {
    .withColumn("predicteduagroup",split(col("nonlkey_cols"),"\\|").getItem(183))
    .withColumn("sslinfolog",split(col("nonlkey_cols"),"\\|").getItem(184))
    .withColumn("timestamp_src",split(col("nonlkey_cols"),"\\|").getItem(185))
-   .withColumn("foundurl",lit("Null")).drop("nonlkey_cols")
+   .withColumn("foundurl",lit("-")).drop("nonlkey_cols")
 
     enrichTCPSL(df1).withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
       .when(col("optimisedsize") >= 1000 && col("optimisedsize") < 200000,"Small")
@@ -233,7 +233,7 @@ object TransactionDFOperations {
         when(
           col("transactiontime") > 5000 && col("optimisedsize") > 3000000,
           (col("optimisedsize")*8).divide(col("transactiontime"))
-        ).otherwise(0))
+        ).otherwise(""))
       .withColumn("tcpthroughput",
         when(
           col("avgrtt") > 10 ,
