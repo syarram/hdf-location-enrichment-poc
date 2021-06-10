@@ -5,13 +5,17 @@ import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 import org.apache.spark.sql.execution.datasources.hbase.HBaseRelation
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.slf4j.LoggerFactory
 
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Calendar
+import java.time.format.DateTimeFormatter
 
 object Utils {
 
+  val logger = LoggerFactory.getLogger(Utils.getClass)
   /**
    * This method reads LZO formatted csv and returns dataframe.
    * @param spark
@@ -53,6 +57,34 @@ object Utils {
   }
 
   /**
+   * This method gets latest avaible partition with in given maximum date range
+   * @param fs
+   * @param loc
+   * @param oDate
+   * @param maxOdate
+   * @return
+   */
+  def getLastPartition(fs:FileSystem, loc:String, oDate:String, maxOdate:String):String ={
+    if(isDateBefore(oDate, maxOdate)) "NotFound"
+    else {
+      try{
+        val partitionList = fs.listStatus(new Path(loc+"="+oDate)).map(p => p.getPath.toString)
+        val partitionSize = partitionList.size
+        if(partitionSize>=1) partitionList(partitionSize-1)
+        else  getLastPartition(fs,loc,getAmendedDate(oDate,-1),maxOdate)
+      }catch{
+        case e:FileNotFoundException =>{
+          getLastPartition(fs,loc,getAmendedDate(oDate,-1),maxOdate)
+        }
+        case e:Exception =>{
+          throw e
+        }
+      }
+    }
+
+  }
+
+  /**
    * This Method takes date string and returns previous date to the input.
    * @param strDate
    * @return
@@ -63,6 +95,34 @@ object Utils {
     val cal = Calendar.getInstance()
       cal.setTime(currentDate)
     cal.add(Calendar.DATE,-1)
+    date.format (cal.getTime)
+  }
+
+  /**
+   * This method checks if date1 is before date2
+   * @param date1
+   * @param date2
+   * @return
+   */
+  def isDateBefore(date1:String,date2:String):Boolean={
+    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    val newDate = LocalDate.parse(date1,formatter)
+    val maxDate = LocalDate.parse(date2,formatter)
+    newDate.isBefore(maxDate)
+  }
+
+  /**
+   * This method returns incremented/decremented date based on input
+   * @param strDate
+   * @param incrementBy
+   * @return
+   */
+  def getAmendedDate(strDate:String,incrementBy:Int):String={
+    val date = new SimpleDateFormat("yyyyMMdd")
+    val currentDate =  date.parse(strDate)
+    val cal = Calendar.getInstance()
+    cal.setTime(currentDate)
+    cal.add(Calendar.DATE,incrementBy)
     date.format (cal.getTime)
   }
 

@@ -29,13 +29,15 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val transactionTable = args(1)
     val magnetPath = args(2).split("=")(0)
     val magnetPathDate = args(2).split("=")(1)
-    val deviceDBPath = args(3)
+    val deviceDBPath = args(3).split("=")(0)
+    val deviceDBPathDate = args(3).split("=")(1)
     val cspTable = args(4)
     val radiusTable = args(5)
     val logType = args(6)
     val hdfsPartitions = args(7).toInt
     val enrichPath = args(8)
     val controlTable = args(9)
+    val dateLimit = args(10)
 
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
@@ -46,6 +48,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"magnetPath=>$magnetPath")
     logger.info(s"magnetPathDate=>$magnetPathDate")
     logger.info(s"deviceDBPath=>$deviceDBPath")
+    logger.info(s"deviceDBPath=>$deviceDBPathDate")
     logger.info(s"cspTable=>$cspTable")
     logger.info(s"radiusTable=>$radiusTable")
     logger.info(s"logType=>$logType")
@@ -95,10 +98,26 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     val hadoopConf: Configuration = spark.sparkContext.hadoopConfiguration
     val fs = FileSystem.get(hadoopConf)
-    val magnetPartition = Utils.getLastPartition(fs, magnetPath, magnetPathDate)
+    val maxMagOdate = Utils.getAmendedDate(magnetPathDate,-dateLimit.toInt)
+    val magnetPartition = Utils.getLastPartition(fs, magnetPath, magnetPathDate, maxMagOdate)
+    if (magnetPartition.equals("NotFound")){
+      logger.error("************************ Magnet partition is not found, Job will be terminated")
+      spark.stop
+      spark.close
+    }
     val magnetDF = Utils.readLZO(spark, magnetPartition, "\t", Definitions.magnetSchema)
-      .dropDuplicates("lkey").cache()
-    val deviceDBDF = Utils.readLZO(spark, deviceDBPath, "\t", Definitions.deviceDBSchema).cache()
+        .dropDuplicates("lkey").cache()
+
+
+    val maxDDBOdate = Utils.getAmendedDate(deviceDBPathDate,-dateLimit.toInt)
+    val DDBPartition = Utils.getLastPartition(fs, deviceDBPath, deviceDBPathDate, maxDDBOdate)
+    if (DDBPartition.equals("NotFound")){
+      logger.error("************************ Device DB partition is not found, Job will be terminated")
+      spark.stop
+      spark.close
+    }
+    val deviceDBDF = Utils.readLZO(spark, DDBPartition, "\t", Definitions.deviceDBSchema).cache()
+
 
     val cspCatalog = HBaseCatalogs.cspCatalog("\"" + cspTable + "\"")
     val cspDF = (Utils.reader(format, cspCatalog)(spark)).select("ip", "csp", "apnid").cache()

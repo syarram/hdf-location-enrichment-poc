@@ -8,11 +8,12 @@ spark-submit --verbose --master yarn-client \
 --class com.tef.etl.main.WebIpfrBatchEnrich Projects/hdf-location-enrichment-poc/target/etl_batch-0.1.jar \
 stage_mme \
 stage_weblogs \
-hdfs://localhost:9000/data/Magnet/dt=20210325 \
+hdfs://localhost:9000/data/Magnet/dt=20210624 \
 hdfs://localhost:9000/data/DeviceDB/dt=20210324 \
 csp_apn_lkp \
 stage_radius \
 INFO \
 100 \
 /data/web \
-webipfr_enrich_control
+webipfr_enrich_control \
+10
