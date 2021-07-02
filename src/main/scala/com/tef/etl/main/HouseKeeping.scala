@@ -75,7 +75,6 @@ object HouseKeeping {
     }else{
       val updatedCntlDF = ctrlProcessDF.withColumn(processColName,lit("InProgress"))
       logger.info("****************Update*****************************")
-      updatedCntlDF.show()
       Utils.updateHbaseColumn(houseKeepingCtlCtlg,updatedCntlDF)
     }
 
@@ -108,7 +107,6 @@ object HouseKeeping {
       val conf = HBaseConfiguration.create()
       val hbaseContext = new HBaseContext(spark.sparkContext, conf)
       val webBothDFsRDD = timeRangeKeys.select(col(keyColumnName)).map(row => row.getAs[String](keyColumnName).getBytes)
-      webBothDFsRDD.show(false)
       hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD.rdd, TableName.valueOf(tableName), deleteRecord => new Delete
       (deleteRecord), deleteBatchSize)
     }

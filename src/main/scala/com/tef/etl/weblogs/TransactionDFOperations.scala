@@ -1,7 +1,6 @@
 package com.tef.etl.weblogs
 
 import com.tef.etl.catalogs.TargetCatalog
-import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -225,6 +224,7 @@ object TransactionDFOperations {
       .withColumn("conttype_tmp", split(col("contenttype"),"/")(1))
       .withColumn("conttype",split(col("conttype_tmp"),";")(0)).drop("conttype_tmp")
       .withColumn("dmy", to_date(col("timestamp_src")))
+      .withColumn("yr", year(col("timestamp_src")))
       .withColumn("hh", date_format(col("timestamp_src"),"HH"))
       .withColumn("mm", minute(col("timestamp_src")))
       .withColumn("ss", second(col("timestamp_src")))
@@ -304,16 +304,13 @@ object TransactionDFOperations {
       "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
       "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
       "azimuth","enodeb_id","tac","ura")
-    val deviceDBSelectColsDF = deviceDBDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
-      "operating_system","device_type","offering")
-    val radiusSessionIDDF = radiusSRCDF.withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
-    val windowSpec  = Window.partitionBy("sesID").orderBy("ts")
-    val radiusSessionIDOrderedDF = radiusSessionIDDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)
+    val deviceDBSelectColsDF = deviceDBDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name", "operating_system","device_type","offering")
+
     trasactionDF
-      .join(cspDF,trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
-      .join(radiusSessionIDOrderedDF,trasactionDF("sessionid")===radiusSessionIDOrderedDF("sesID"),"left").drop("rank","rkey","sesID")
-      .join(magnetSpecificColsDF,trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
-      .join(deviceDBSelectColsDF,trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
+      .join(broadcast(cspDF),trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
+      .join(broadcast(radiusSRCDF),trasactionDF("sessionid")===radiusSRCDF("sesID"),"left").drop("rank","rkey","sesID")
+      .join(broadcast(magnetSpecificColsDF),trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
+      .join(broadcast(deviceDBSelectColsDF),trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
       .withColumnRenamed("userid_web","emsisdn")
   }
 

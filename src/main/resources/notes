@@ -258,3 +258,31 @@ spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", "com.hadoop.
   ))
 val df = spark.read.format("csv").option("delimiter","\t").schema(finalSchema).load("hdfs://localhost:9000/data/web")
 df.orderBy("emsisdn").show(15,false)
+
+_________________________________________________________________________________
+Radius Test
+_________________________________________________________________________________
+
+def stageRadiusCatalog = s"""{
+    "table":{"namespace":"default", "name":"stage_radius"},
+    "rowkey":"key",
+    "columns":{
+      "rkey":{"cf":"rowkey", "col":"key", "type":"string"},
+      "ts":{"cf":"cfRadius", "col":"TS", "type":"string"},
+      "cc":{"cf":"cfRadius", "col":"CC", "type":"string"},
+      "avpcustom1":{"cf":"cfRadius", "col":"AVP1", "type":"string"},
+      "avpcustom2":{"cf":"cfRadius", "col":"AVP2", "type":"string"},
+      "avpcustom3":{"cf":"cfRadius", "col":"AVP3", "type":"string"},
+      "avpcustom4":{"cf":"cfRadius", "col":"AVP4", "type":"string"},
+      "avpcustom5":{"cf":"cfRadius", "col":"AVP5", "type":"string"}
+    }
+  }""".stripMargin
+
+import org.apache.spark.sql.execution.datasources.hbase.{HBaseTableCatalog}
+val radiusSRCDF = spark.read.option(HBaseTableCatalog.tableCatalog, stageRadiusCatalog).format("org.apache.spark.sql.execution.datasources.hbase").load()
+val df = radiusSRCDF.withColumn("seq",when(col("cc").equalTo("CCAT"),1).when(col("cc").equalTo("RART"),2).otherwise(3)).withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":"))).cache()
+
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
+val windowSpec  = Window.partitionBy("sesID").orderBy("seq")
+val df2 = df.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1)

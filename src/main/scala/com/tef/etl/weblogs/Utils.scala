@@ -3,8 +3,9 @@ package com.tef.etl.weblogs
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.hbase.spark.datasources.HBaseTableCatalog
 import org.apache.spark.sql.execution.datasources.hbase.HBaseRelation
+import org.apache.spark.sql.functions.{col, date_format, when}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.slf4j.LoggerFactory
 
 import java.io.FileNotFoundException
@@ -186,5 +187,34 @@ object Utils {
       .option(HBaseRelation.MAX_STAMP,max)
       .format(format)
       .load()
+  }
+
+  /**
+   * This method writes dataframe to CSV file with LZO compression
+   * @param df
+   * @param enrichPath
+   */
+  def writeLZOCSV(df:DataFrame, path:String): Unit ={
+    df.write.partitionBy("dt", "hour", "loc", "csp")
+      .option("codec", "com.hadoop.compression.lzo.LzopCodec")
+      .option("delimiter", "\t")
+      .mode(SaveMode.Append)
+      .csv(path)
+  }
+
+  def writeErichedData(df:DataFrame,enrichPath:String,errorPath:String): Unit ={
+    if("none".equalsIgnoreCase(errorPath)){
+      writeLZOCSV(df.drop("yr"),enrichPath)
+    }else {
+      import org.apache.spark.sql.functions._
+      val enrichDF = df.filter(col("yr") > 2020 && col("yr") < 2300).drop("yr")
+      writeLZOCSV(enrichDF,enrichPath)
+
+      val errorDF = df.filter(col("yr") <= 2020 || col("yr") >= 2300)
+        .drop("yr")
+        .withColumn("dt",date_format(current_date,"yyyyMMdd"))
+        .withColumn("hour",date_format(current_timestamp,"HH"))
+      writeLZOCSV(errorDF,errorPath)
+    }
   }
 }

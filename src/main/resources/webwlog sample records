@@ -5,9 +5,10 @@ create 'stage_radius', {NAME=> 'cfRadius', COMPRESSION=> 'SNAPPY'}
 ++++++++++++++++++++++++++++++stage_weblogs++++++++++++++++++++++++++++++++++++++
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfLKey:lkey', 'Unknown'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:nonlkey_cols', '10.66.173.214|47730|0|0|410|62.149.0.36|80|0|0|0|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|ads19.vertamedia.com|/vast/|adid=13347ACF6C900E56&aid=560534&cmpId=471503&cb=386335976|20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947709870|vs-http|1600034527|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|540|575|0/0|0|889|0|0|NONE|302|0|0|-|-|30/30/30 845 849/849 0.0/0.0|-|ZodnnOuQYw7ApgRYRMjFvG898bNjeRZGRvp1Dq/6sss=|netscaler1.com;1593463031;30283195;65535;3601678858:|-|Mozilla/5.0 (Linux; Android 10; SM-A405FN Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.81 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:44:59.905735'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6',
+'cfNonLKey:nonlkey_cols', '10.66.173.214|47730|0|0|410|62.149.0.36|80|0|0|0|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|ads19.vertamedia.com|/vast/|adid=13347ACF6C900E56&aid=560534&cmpId=471503&cb=386335976|20006|3|1|0|0|0|ns_videoopt_http_body_detection|1|1|8|0|1|0|1356|172.25.112.152|-|3|947709870|vs-http|1600034527|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|540|575|0/0|0|889|0|0|NONE|302|0|0|-|-|30/30/30 845 849/849 0.0/0.0|-|ZodnnOuQYw7ApgRYRMjFvG898bNjeRZGRvp1Dq/6sss=|netscaler1.com;1593463031;30283195;65535;3601678858:|-|Mozilla/5.0 (Linux; Android 10; SM-A405FN Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.81 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2021-09-14 09:44:59.905735'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:partitionNum', '26'
-put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6',  'cfNonLKey:srcTimeStamp', '1600073099905'
+put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:srcTimeStamp', '1600073099905'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:userId', 'HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I='
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:sessionid', 'netscaler1.com;1593463031;30283195;65535;3601678858:'
 put 'stage_weblogs','HAPBmWUgDZHIMIHo07hAr0bv719iiG0UOKaggu3IY3I=_df148ae899565-db9d-4129-8771-32323c8d0be6', 'cfNonLKey:clientip', '10.66.173.214'
@@ -86,7 +87,7 @@ put 'stage_weblogs','e+bDXZuQWsehoH1chdqfTshOiZI++EP5ICZuBhtbkbU=_df3966e2e329e-
 
 put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfLKey:lkey', '135-503877'
 put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:loc', 'GLB1'
-put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:nonlkey_cols', '10.71.20.183|43978|0|0|410|172.67.164.47|80|0|0|169|0|0|0|0|0:0|0|0|0|0|0|0|0|0|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|0|-|-|-|-|0|0|0|0.0|0|-|-|-|-|GET|static-0.caribosome.com|/dr/EBW0cKHZ5PDVQxflBmyswGTp2BP78zyaEkTS90FDjNWDMdYvfa9S_-_8e_tcQfMBG4Ex4pRWR4gMYaDZ6QoqdyJ3GQpSJRZkOzq5YatkXqfbdglLfvxNCgYrILn9tJ6E0qbIZ5joAvMCKTfGdDwXpxnJSLiSGSQkRKdBSF75ac9GKlFU1Lp-khii_QyRssGYs8XdS7YiOKRgjzrV1Bik8Esc8tZVxDlbOfVkg6YXesHhioCBQaypYiYip20EVqonlWQ3mIc363BAlKqSf6vSyEosePi63njqBXchnSY_zoEQQ4LtfLOGCTiQ7TBvFH1A8BandnPxSpwsRCPNcLxDZ8R1t721wl7snJ4xGCYvCKTjXeGW4B462b_8qKt7tR4PiheA1qkKSlK95Wz5r-Opf4j_saOlng6xem-gzjfDeFbKvskmvaY24bZ6F3wTXRd0Z9d87ALnGVXTIk7XqrgrrEYh8U0y5AmqprOWEClOcUm3fgXMFSy0kX-Q1ntmcA0dAGdQhGVKFj7EyllJSTxVyA|url=http%3A%2F%2Fclick.diyomisoft.net%2Ftracking%2Fclick%3Ftrafficsource%3D1373697409%26offerid%3D429375622641634846%26payout%3D0.49%26clickid%3D93226532-f666-11ea-97f5-114ffd0001d0_669_14638548_cpi%26pub_subid%3DDq7qUiqhkxctG2MEtz-JIKye_CP7YQiRR6wFzII9R5g9J0DEI%26idfa%3D%26gaid%3D%26sub_placement%3D0c46c5046faf4dff9692ac92c4acd26c:%20CallApp%20-%20Caller%20ID%20&%20Block|0|0|2|0|0|0|ns_videoopt_http_body_detection|1|0|8|0|1|0|1356|172.25.112.152|-|0|948567915|vs-http|1600065190|-|o2-nstcp-nile-no-DRB|-|0|0|0|0|v12|-|244|1594|0/0|0|1204|0|0|NONE|301|0|0|-|-|0/0/0 0 0/0 0.0/0.0|text/html; charset=utf-8|pxw6z/Ovw1t+awshuMkABNm2+l6SB53WVcrJ3T4paZs=|netscaler1.com;1593463031;30374124;65535;3071559434:|-|Mozilla/5.0 (Linux; Android 10; SM-G960F Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/85.0.4183.101 Mobile Safari/537.36|-|-|0:0|-|0|-|-|0:0|0/0|-|-|-|-|-|2020-09-14 09:45:01.823743'
+put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:nonlkey_cols', ''
 put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:partitionNum', '9'
 put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:srcTimeStamp', '1600073101823'
 put 'stage_weblogs','+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8=_df3966e2e329e-a1fe-4083-9ae8-63111b5dae60', 'cfNonLKey:userId', '+++GlxXIp8cp07OVrzwQIIp+ldZAK4JH1K1cIgQr5G8='
@@ -215,3 +216,18 @@ put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:APN', 'idata.o2.co.uk (UK)'
 put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:APNName', 'Idata'
 put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:CSP', 'o2'
 put 'csp_apn_lkp','10.0.0.0', 'cfcspapn:Network', '10.0.0.0/10'
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+create 'webipfr_enrich_control','cfEnrich'
+
+put 'webipfr_enrich_control','1000000','cfEnrich:weblogs_stream_processed_ts','1600073201823'
+put 'webipfr_enrich_control','1000000','cfEnrich:weblogs_stream_processed_systime','1600073201823'
+put 'webipfr_enrich_control','1000000','cfEnrich:weblogs_batch_processed_ts',''
+put 'webipfr_enrich_control','1000000','cfEnrich:weblogs_batch_processed_systime',''
+put 'webipfr_enrich_control','1000000','cfEnrich:batch_job_status','Completed'
+put 'webipfr_enrich_control','1000000','cfEnrich:mme_deleted_systime',''
+put 'webipfr_enrich_control','1000000','cfEnrich:mme_deleted_ts',''
+put 'webipfr_enrich_control','1000000','cfEnrich:mme_delete_job_status',''
+put 'webipfr_enrich_control','1000000','cfEnrich:radius_delete_job_status',''
+put 'webipfr_enrich_control','1000000','cfEnrich:radius_deleted_ts',''

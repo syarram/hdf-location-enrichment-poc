@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.spark.HBaseContext
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.slf4j.LoggerFactory
 
@@ -36,9 +36,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val logType = args(6)
     val hdfsPartitions = args(7).toInt
     val enrichPath = args(8)
-    val controlTable = args(9)
-    val dateLimit = args(10)
-
+    val errorPath = args(9)
+    val controlTable = args(10)
+    val dateLimit = args(11)
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
 
@@ -54,7 +54,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"logType=>$logType")
     logger.info(s"hdfsPartitions=>$hdfsPartitions")
     logger.info(s"enrichPath=>$enrichPath")
+    logger.info(s"errorPath=>$errorPath")
     logger.info(s"controlTable=>$controlTable")
+    logger.info(s"dateLimit=>$dateLimit")
     logger.info("*********************Argument/Variables*************************************")
 
     import spark.implicits._
@@ -78,7 +80,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     val webCatalog = HBaseCatalogs.stagewebcatalog("\"" + transactionTable + "\"")
     val sourceDF = (Utils.reader(format, webCatalog)(spark))
-    val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal).cache()
+    val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal).repartition(hdfsPartitions).cache()
 
     val webCount = sourceDFFiltered.count()
 
@@ -108,7 +110,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val magnetDF = Utils.readLZO(spark, magnetPartition, "\t", Definitions.magnetSchema)
         .dropDuplicates("lkey").cache()
 
-
     val maxDDBOdate = Utils.getAmendedDate(deviceDBPathDate,-dateLimit.toInt)
     val DDBPartition = Utils.getLastPartition(fs, deviceDBPath, deviceDBPathDate, maxDDBOdate)
     if (DDBPartition.equals("NotFound")){
@@ -118,13 +119,20 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     }
     val deviceDBDF = Utils.readLZO(spark, DDBPartition, "\t", Definitions.deviceDBSchema).cache()
 
-
     val cspCatalog = HBaseCatalogs.cspCatalog("\"" + cspTable + "\"")
     val cspDF = (Utils.reader(format, cspCatalog)(spark)).select("ip", "csp", "apnid").cache()
 
-
     val RadiusCatalog = HBaseCatalogs.stageRadiusCatalog("\"" + radiusTable + "\"")
-    val radiusSRCDF = (Utils.reader(format, RadiusCatalog)(spark)).cache()
+    val radiusDF = (Utils.reader(format, RadiusCatalog)(spark))
+      .withColumn("sesID",concat(split(col("rkey"),":")(0),lit(":")))
+      .withColumn("seq",
+      when(col("cc").equalTo("PCRF_CCAT"),1)
+        .when(col("cc").equalTo("PCRF_RART"),2)
+        .when(col("cc").equalTo("PCRF_CCAI"),3)
+        .otherwise(4))
+    val windowSpec  = Window.partitionBy("sesID").orderBy("seq")
+    val radiusSRCDF = radiusDF.withColumn("rank",rank().over(windowSpec)).filter(col("rank")===1).cache()
+
     //Filter all rows with empty or null nonlkey_cols value
     val srcFilteredDF = sourceDFFiltered.filter(col("nonlkey_cols").isNotNull)
     logger.info(s"********************number of records with nonlkey_cols ${srcFilteredDF.count()}")
@@ -132,37 +140,30 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       col("lkey_web").notEqual("Unknown") &&
         col("lkey_web").notEqual("NoMatch"))
       .withColumnRenamed("lkey_web", "lkey")
+
     val transWithLkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceDFWithLkey, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithLkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark, transWithLkeyOtherTables,
       "WEB")
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
-    transWithLkeyOtherTablesExpandedFinal.write.partitionBy("dt", "hour", "loc", "csp")
-      .option("codec", "com.hadoop.compression.lzo.LzopCodec")
-      .option("delimiter", "\t")
-      .mode(SaveMode.Append)
-      .csv(enrichPath)
+    Utils.writeErichedData(transWithLkeyOtherTablesExpandedFinal,enrichPath,errorPath)
+
 
     val sourceDFWithoutLkey = srcFilteredDF.filter(col("lkey_web") === "Unknown" || col("lkey_web") === "NoMatch")
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark, transWithMMELkeyOtherTables, "WEB")
+
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
-    transWithMMELkeyOtherTablesExpandedFinal.write.partitionBy("dt", "hour", "loc", "csp")
-      .option("codec", "com.hadoop.compression.lzo.LzopCodec")
-      .option("delimiter", "\t")
-      .mode(SaveMode.Append)
-      .csv(enrichPath)
+    Utils.writeErichedData(transWithMMELkeyOtherTablesExpandedFinal,enrichPath,errorPath)
 
     val HbaseConf = HBaseConfiguration.create()
     val hbaseContext = new HBaseContext(spark.sparkContext, HbaseConf)
     val keysDF = sourceDFFiltered.select(col("userid_web_seq"))
-    keysDF.show(20, false)
     val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
     hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
     (deleteRecord), 4)
 
     //Update weblogs_batch_processed_ts with weblogs_stream_processed_ts
-
     val updatedCntlDF = hkCntrlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
       .withColumn("batch_job_status", lit("Completed"))
     Utils.updateHbaseColumn(houseKeepingCtlCtlg, updatedCntlDF)

@@ -252,6 +252,7 @@ object TargetCatalog {
     "avpcustom5",
     "foundurl",
     "dt",
+    "yr",
     "hour",
     "loc",
     "csp"
