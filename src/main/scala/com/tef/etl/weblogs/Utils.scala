@@ -71,7 +71,7 @@ object Utils {
       try{
         val partitionList = fs.listStatus(new Path(loc+"="+oDate)).map(p => p.getPath.toString)
         val partitionSize = partitionList.size
-        if(partitionSize>=1) partitionList(partitionSize-1)
+        if(partitionSize>=1) loc+"="+oDate
         else  getLastPartition(fs,loc,getAmendedDate(oDate,-1),maxOdate)
       }catch{
         case e:FileNotFoundException =>{

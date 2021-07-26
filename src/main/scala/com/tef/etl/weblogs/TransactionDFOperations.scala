@@ -273,10 +273,10 @@ object TransactionDFOperations {
    */
   def getFinalDF(df:DataFrame):DataFrame={
     val missingColumnsDF = df.withColumn("calc_1",lit("Null"))
-      .withColumn("calc_2",lit("Null"))
-      .withColumn("calc_3",lit("Null"))
-      .withColumn("calc_4",lit("Null"))
-      .withColumn("calc_5",lit("Null"))
+      .withColumn("calc_2",lit("-"))
+      .withColumn("calc_3",lit("-"))
+      .withColumn("calc_4",lit("-"))
+      .withColumn("calc_5",lit("-"))
       .withColumn("vslsessinb",lit("Null"))
       .withColumn("vslsessoutb",lit("Null"))
       .withColumn("vslstalldur",lit("Null"))
@@ -284,9 +284,9 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
+      .withColumn("csp",when(df("csp").isNull,"other").otherwise(df("csp")))
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
-
   }
 
   /**
@@ -308,7 +308,7 @@ object TransactionDFOperations {
 
     trasactionDF
       .join(broadcast(cspDF),trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
-      .join(broadcast(radiusSRCDF),trasactionDF("sessionid")===radiusSRCDF("sesID"),"left").drop("rank","rkey","sesID")
+      .join(radiusSRCDF,trasactionDF("sessionid")===radiusSRCDF("sesID"),"left").drop("rank","rkey","sesID")
       .join(broadcast(magnetSpecificColsDF),trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
       .join(broadcast(deviceDBSelectColsDF),trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
       .withColumnRenamed("userid_web","emsisdn")
