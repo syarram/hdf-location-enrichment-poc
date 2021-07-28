@@ -205,7 +205,7 @@ object TransactionDFOperations {
    .withColumn("timestamp_src",split(col("nonlkey_cols"),"\\|").getItem(185))
    .withColumn("foundurl",lit("-")).drop("nonlkey_cols")
 
-    enrichTCPSL(df1).withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
+    val df2 = enrichTCPSL(df1).withColumn("sizetag", when(col("optimisedsize") < 1000,"Tiny")
       .when(col("optimisedsize") >= 1000 && col("optimisedsize") < 200000,"Small")
     .when(col("optimisedsize") >= 200000 && col("optimisedsize") < 1000000,"Medium")
     .when(col("optimisedsize") >= 1000000 && col("optimisedsize") < 5000000,"Large")
@@ -218,11 +218,6 @@ object TransactionDFOperations {
         .when(col("src_flag").equalTo(32),"NS_Other_video")
         .when(col("src_flag").equalTo(33),"NS_QUIC_ABR_video")
           .otherwise("Not_Detected"))
-      .withColumn("conttype_1", when(
-        split(col("contenttype"),"/")(0).equalTo("-"),"unknown")
-        .otherwise(split(col("contenttype"),"/")(0)))
-      .withColumn("conttype_tmp", split(col("contenttype"),"/")(1))
-      .withColumn("conttype",split(col("conttype_tmp"),";")(0)).drop("conttype_tmp")
       .withColumn("dmy", to_date(col("timestamp_src")))
       .withColumn("yr", year(col("timestamp_src")))
       .withColumn("hh", date_format(col("timestamp_src"),"HH"))
@@ -242,6 +237,8 @@ object TransactionDFOperations {
       .withColumn("dt", date_format(col("dmy"),"yyyyMMdd"))
       .withColumn("hour", col("hh"))
       .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
+//to enrich conttype and conttype_1
+    enrichContType(df2)
 
   }
 
@@ -264,6 +261,57 @@ object TransactionDFOperations {
       .withColumn("pktlossrate", split(col("tmp_2")," ")(1))
       .withColumn("pktretransrate", split(col("src_tcpsl"),"/")(4))
       .drop("tmp_1").drop("tmp_2").drop("src_tcpsl")
+  }
+
+  def enrichContType(df:DataFrame):DataFrame={
+    df.withColumn("conttype_tmp1", split(col("contenttype"),"/")(0))
+      .withColumn("conttype_1",
+        when(col("conttype_tmp1").contains("-"),"unknown").
+          when(col("conttype_tmp1").contains(""),"null").
+          when(col("conttype_tmp1").contains("rtmp") || col("conttype_tmp1").contains("video") || col("conttype_tmp1").contains("mpeg"),"Video").
+          when(col("conttype_tmp1").contains("image") || col("conttype_tmp1").contains("img") || col("conttype_tmp1").contains("jpeg"),"Image").
+          when(col("conttype_tmp1").contains("font") || col("conttype_tmp1").contains("application") || col("conttype_tmp1").contains("app") || col("conttype_tmp1").contains("binary"),"Application").
+          when(col("conttype_tmp1").contains("audio"),"Audio").
+          when(col("conttype_tmp1").contains("text"),"Text").
+          when(col("conttype_tmp1").contains("raw-data"),"raw-data").otherwise("NULL"))
+      .withColumn("conttype_tmp2", split(col("contenttype"),"/")(1)).drop("conttype_tmp1")
+      .withColumn("conttype",
+    when(col("conttype_tmp2").contains("octet-stream"),"octet-stream").
+      when(col("conttype_tmp2").contains("mp4"),"mp4").
+      when(col("conttype_tmp2").contains("png"),"png").
+      when(col("conttype_tmp2").contains("gif"),"gif").
+      when(col("conttype_tmp2").contains("json"),"json").
+      when(col("conttype_tmp2").contains("xml"),"xml").
+      when(col("conttype_tmp2").contains("binary"),"binary").
+      when(col("conttype_tmp2").contains("zip"),"zip").
+      when(col("conttype_tmp2").contains("apple-plist"),"apple-plist").
+      when(col("conttype_tmp2").contains("pdf"),"pdf").
+      when(col("conttype_tmp2").contains("mpeg"),"mpeg").
+      when(col("conttype_tmp2").contains("aac"),"aac").
+      when(col("conttype_tmp2").contains("mp3"),"mp3").
+      when(col("conttype_tmp2").contains("3gp"),"3gpp").
+      when(col("conttype_tmp2").contains("m4v"),"m4v").
+      when(col("conttype_tmp2").contains("asf"),"asf").
+      when(col("conttype_tmp2").contains("dash"),"dash").
+      when(col("conttype_tmp2").contains("font") || col("conttype_tmp2").contains("woff") || col("conttype_tmp2").contains("tff") || col("conttype_tmp2").contains("otf") ,"font").
+    when(col("conttype_tmp2").contains("webm"),"webm").
+      when(col("conttype_tmp2").contains("webp"),"webp").
+      when(col("conttype_tmp2").contains("plain"),"plaintext").
+      when(col("conttype_tmp2").contains("avi"),"avi").
+      when(col("conttype_tmp2").contains("flv"),"flv").
+      when(col("conttype_tmp2").contains("quicktime"),"quicktime").
+      when(col("conttype_tmp2").contains("f4"),"f4f").
+      when(col("conttype_tmp2").contains("html"),"html").
+      when(col("conttype_tmp2").contains("xml"),"xml").
+      when(col("conttype_tmp2").contains("css"),"css").
+      when(col("conttype_tmp2").contains("x-mixed-replace"),"x-mixed-replace").
+      when(col("conttype_tmp2").contains("mms-framed"),"mms-framed").
+    when(col("conttype_tmp2").contains("shockwave"),"shockwave-flash").
+    when(col("conttype_tmp2").contains("vnd.android.package-delta"),"vnd.android.package-delta").
+    when(col("conttype_tmp2").contains("vnd.android.package-archive"),"vnd.android.package-archive").
+    when(col("conttype_tmp2").contains("java") || col("conttype_tmp2").contains("js") || col("conttype_tmp2")
+      .contains("json"),"javascript").otherwise("null")
+      ).drop("conttype_tmp2")
   }
 
   /**
@@ -308,7 +356,9 @@ object TransactionDFOperations {
 
     trasactionDF
       .join(broadcast(cspDF),trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
-      .join(radiusSRCDF,trasactionDF("sessionid")===radiusSRCDF("sesID"),"left").drop("rank","rkey","sesID")
+      .join(radiusSRCDF,trasactionDF("sessionid")===radiusSRCDF("sesID") &&
+        trasactionDF("time_web")>=radiusSRCDF("ts"),"left")
+      .drop("rank","rkey","sesID")
       .join(broadcast(magnetSpecificColsDF),trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
       .join(broadcast(deviceDBSelectColsDF),trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
       .withColumnRenamed("userid_web","emsisdn")

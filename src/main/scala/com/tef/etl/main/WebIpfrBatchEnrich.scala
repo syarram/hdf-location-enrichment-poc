@@ -135,7 +135,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     //Filter all rows with empty or null nonlkey_cols value
     val srcFilteredDF = sourceDFFiltered.filter(col("nonlkey_cols").isNotNull)
-    logger.info(s"********************number of records with nonlkey_cols ${srcFilteredDF.count()}")
     val sourceDFWithLkey = srcFilteredDF.filter(
       col("lkey_web").notEqual("Unknown") &&
         col("lkey_web").notEqual("NoMatch"))
