@@ -39,6 +39,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val errorPath = args(9)
     val controlTable = args(10)
     val dateLimit = args(11)
+    val deleteFlag = args(12)
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
 
@@ -155,12 +156,14 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
     Utils.writeErichedData(transWithMMELkeyOtherTablesExpandedFinal,enrichPath,errorPath)
 
-    val HbaseConf = HBaseConfiguration.create()
-    val hbaseContext = new HBaseContext(spark.sparkContext, HbaseConf)
-    val keysDF = sourceDFFiltered.select(col("userid_web_seq"))
-    val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
-    hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
-    (deleteRecord), 4)
+    if(deleteFlag.equalsIgnoreCase("true")){
+      val HbaseConf = HBaseConfiguration.create()
+      val hbaseContext = new HBaseContext(spark.sparkContext, HbaseConf)
+      val keysDF = sourceDFFiltered.select(col("userid_web_seq"))
+      val webBothDFsRDD = keysDF.map(row => row.getAs[String]("userid_web_seq").getBytes).rdd
+      hbaseContext.bulkDelete[Array[Byte]](webBothDFsRDD, TableName.valueOf(transactionTable), deleteRecord => new Delete
+      (deleteRecord), 4)
+    }
 
     //Update weblogs_batch_processed_ts with weblogs_stream_processed_ts
     val updatedCntlDF = hkCntrlDF.withColumn("weblogs_batch_processed_ts", lit(streamProccessedTimeVal))
