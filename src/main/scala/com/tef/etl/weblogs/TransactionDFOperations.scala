@@ -332,6 +332,8 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
+      .withColumn("generation",when(df("generation").isNull,"LNF").otherwise(df("generation")))
+      .withColumn("apnid",regexp_replace(col("apnid"), "  ","<TAB>"))
       .withColumn("csp",when(df("csp").isNull,"other").otherwise(df("csp")))
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
