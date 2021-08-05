@@ -58,6 +58,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"errorPath=>$errorPath")
     logger.info(s"controlTable=>$controlTable")
     logger.info(s"dateLimit=>$dateLimit")
+    logger.info(s"deleteFlag=>$deleteFlag")
     logger.info("*********************Argument/Variables*************************************")
 
     import spark.implicits._
@@ -146,7 +147,6 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       "WEB")
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
     Utils.writeErichedData(transWithLkeyOtherTablesExpandedFinal,enrichPath,errorPath)
-
 
     val sourceDFWithoutLkey = srcFilteredDF.filter(col("lkey_web") === "Unknown" || col("lkey_web") === "NoMatch")
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
