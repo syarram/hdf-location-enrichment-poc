@@ -14,6 +14,12 @@ object TransactionDFOperations {
    * @return
    */
   def sourceColumnSplit(spark:SparkSession, df: DataFrame, fileType:String="MME"): DataFrame = {
+    val convertUsrAgt = (usrAgntStr:String) =>{
+      val arr = usrAgntStr.split("server-bag ")
+      "server-bag "+"["+arr(1)+"]"
+    }
+    val usrAgtUDF = udf(convertUsrAgt)
+
     val df1 = //df.withColumn("clientip",split(col("nonlkey_cols"),"\\|").getItem(0))
       df.withColumn("clientport",split(col("nonlkey_cols"),"\\|").getItem(1))
       .withColumn("serverlocport",split(col("nonlkey_cols"),"\\|").getItem(2))
@@ -184,7 +190,11 @@ object TransactionDFOperations {
    .withColumn("MSH",split(col("nonlkey_cols"),"\\|").getItem(167))
    //.withColumn("sessionid",split(col("nonlkey_cols"),"\\|").getItem(168))
    .withColumn("susbcriberid",split(col("nonlkey_cols"),"\\|").getItem(169))
-   .withColumn("useragent",split(col("nonlkey_cols"),"\\|").getItem(170)).withColumn("useragent",regexp_replace(col("useragent"),"\\\\x09"," "))
+   .withColumn("useragent",split(col("nonlkey_cols"),"\\|").getItem(170)).withColumn("useragent",regexp_replace(col
+      ("useragent"),"\\\\x09"," "))
+        .withColumn("useragent",when(col("useragent").isNotNull &&
+          col("useragent").contains("server-bag"),usrAgtUDF(col("useragent")
+      )).otherwise(col("useragent")))
    .withColumn("deviceid",split(col("nonlkey_cols"),"\\|").getItem(171))
    .withColumn("uagroup",split(col("nonlkey_cols"),"\\|").getItem(172))
    .withColumn("catid",split(col("nonlkey_cols"),"\\|").getItem(173))
@@ -239,7 +249,6 @@ object TransactionDFOperations {
       .withColumn("timestamp", unix_timestamp(col("timestamp_src"),"yyyy-MM-dd HH:mm:ss"))
 //to enrich conttype and conttype_1
     enrichContType(df2)
-
   }
 
   /**
