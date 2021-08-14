@@ -72,6 +72,8 @@ object Definitions {
   StructField("latitude", StringType, nullable = true),
   StructField("longitude", StringType, nullable = true)))
 
+  val magnetSelectList:List[String] = List("lkey","csr","cell_id","sector","generation","manufacturer","lacod","postcode","easting","northing","sac","rac","ant_height","ground_height","tilt","elec_tilt", "azimuth","enodeb_id","tac","ura")
+
   val deviceDBSchema:StructType = StructType(Array(
     StructField("emsisdn", StringType, nullable = true),
     StructField("imsi", StringType, nullable = true),
@@ -92,6 +94,8 @@ object Definitions {
     StructField("billing_system", StringType, nullable = true)
   ))
 
+  val deviceDBSelectList:List[String] = List("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
+    "operating_system","device_type","offering")
 
   val finalSchema:StructType = StructType(Array(
     StructField("dmy", StringType, nullable = true),

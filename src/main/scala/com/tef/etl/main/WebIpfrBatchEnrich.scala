@@ -109,8 +109,9 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       spark.stop
       spark.close
     }
-    val magnetDF = Utils.readLZO(spark, magnetPartition, "\t", Definitions.magnetSchema)
-        .dropDuplicates("lkey").cache()
+    val magnetSrcDF = Utils.readLZO(spark, magnetPartition, "\t", Definitions.magnetSchema)
+        .dropDuplicates("lkey")
+    val magnetDF = magnetSrcDF.select(Definitions.magnetSelectList.map(col): _*).cache()
 
     val maxDDBOdate = Utils.getAmendedDate(deviceDBPathDate,-dateLimit.toInt)
     val DDBPartition = Utils.getLastPartition(fs, deviceDBPath, deviceDBPathDate, maxDDBOdate)
@@ -119,7 +120,8 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
       spark.stop
       spark.close
     }
-    val deviceDBDF = Utils.readLZO(spark, DDBPartition, "\t", Definitions.deviceDBSchema).cache()
+    val deviceSrcDBDF = Utils.readLZO(spark, DDBPartition, "\t", Definitions.deviceDBSchema).cache()
+    val deviceDBDF = deviceSrcDBDF.select(Definitions.deviceDBSelectList.map(col): _*).cache()
 
     val cspCatalog = HBaseCatalogs.cspCatalog("\"" + cspTable + "\"")
     val cspDF = (Utils.reader(format, cspCatalog)(spark)).select("ip", "csp", "apnid").cache()
@@ -137,6 +139,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
 
     //Filter all rows with empty or null nonlkey_cols value
     val srcFilteredDF = sourceDFFiltered.filter(col("nonlkey_cols").isNotNull)
+    logger.info(s"********number of records with nonlkey_cols ${srcFilteredDF.count()}")
     val sourceDFWithLkey = srcFilteredDF.filter(
       col("lkey_web").notEqual("Unknown") &&
         col("lkey_web").notEqual("NoMatch"))

@@ -358,20 +358,13 @@ object TransactionDFOperations {
    * @return
    */
   def joinForLookUps(trasactionDF: DataFrame, magnetDF: DataFrame, deviceDBDF: DataFrame, cspDF: DataFrame, radiusSRCDF: DataFrame): DataFrame = {
-
-    val magnetSpecificColsDF = magnetDF.select("lkey",
-      "csr","cell_id","sector","generation","manufacturer","lacod","postcode",
-      "easting", "northing","sac", "rac","ant_height", "ground_height","tilt","elec_tilt",
-      "azimuth","enodeb_id","tac","ura")
-    val deviceDBSelectColsDF = deviceDBDF.select("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name", "operating_system","device_type","offering")
-
     trasactionDF
       .join(broadcast(cspDF),trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
       .join(radiusSRCDF,trasactionDF("sessionid")===radiusSRCDF("sesID") &&
         trasactionDF("time_web")>=radiusSRCDF("ts"),"left")
       .drop("rank","rkey","sesID")
-      .join(broadcast(magnetSpecificColsDF),trasactionDF("lkey")===magnetSpecificColsDF("lkey"),"left").drop(magnetSpecificColsDF("lkey"))
-      .join(broadcast(deviceDBSelectColsDF),trasactionDF("userid_web")===deviceDBSelectColsDF("emsisdn"),"left").drop(deviceDBSelectColsDF("emsisdn"))
+      .join(broadcast(magnetDF),trasactionDF("lkey")===magnetDF("lkey"),"left").drop(magnetDF("lkey"))
+      .join(deviceDBDF,trasactionDF("userid_web")===deviceDBDF("emsisdn"),"left").drop(deviceDBDF("emsisdn"))
       .withColumnRenamed("userid_web","emsisdn")
   }
 
