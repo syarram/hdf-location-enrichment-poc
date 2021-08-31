@@ -82,20 +82,20 @@ object Definitions {
     StructField("manufacturer", StringType, nullable = true),
     StructField("bands", StringType, nullable = true),
     StructField("allocation_date", StringType, nullable = true),
-    StructField("model_name", StringType, nullable = true),
     StructField("brand_name", StringType, nullable = true),
+    StructField("model_name", StringType, nullable = true),
     StructField("operating_system", StringType, nullable = true),
     StructField("nfc", StringType, nullable = true),
     StructField("bluetooth", StringType, nullable = true),
     StructField("wlan", StringType, nullable = true),
     StructField("device_type", StringType, nullable = true),
     StructField("service_provider_id", StringType, nullable = true),
-    StructField("offering", StringType, nullable = true),
-    StructField("billing_system", StringType, nullable = true)
+    StructField("billing_system", StringType, nullable = true),
+    StructField("offering", StringType, nullable = true)
+
   ))
 
-  val deviceDBSelectList:List[String] = List("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name",
-    "operating_system","device_type","offering")
+  val deviceDBSelectList:List[String] = List("emsisdn","imsi","imeisv","marketing_name","brand_name","model_name","operating_system","device_type","offering")
 
   val finalSchema:StructType = StructType(Array(
     StructField("dmy", StringType, nullable = true),

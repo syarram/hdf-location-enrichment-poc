@@ -140,9 +140,11 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     //Filter all rows with empty or null nonlkey_cols value
     val srcFilteredDF = sourceDFFiltered.filter(col("nonlkey_cols").isNotNull)
     logger.info(s"********number of records with nonlkey_cols ${srcFilteredDF.count()}")
+
     val sourceDFWithLkey = srcFilteredDF.filter(
       col("lkey_web").notEqual("Unknown") &&
-        col("lkey_web").notEqual("NoMatch"))
+        col("lkey_web").notEqual("NoMatch") &&
+        col("lkey_web").notEqual("NoLocation") )
       .withColumnRenamed("lkey_web", "lkey")
 
     val transWithLkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceDFWithLkey, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
@@ -151,13 +153,23 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val transWithLkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithLkeyOtherTablesExpanded)
     Utils.writeErichedData(transWithLkeyOtherTablesExpandedFinal,enrichPath,errorPath)
 
-    val sourceDFWithoutLkey = srcFilteredDF.filter(col("lkey_web") === "Unknown" || col("lkey_web") === "NoMatch")
+    val sourceDFWithoutLkey = srcFilteredDF.filter(
+      col("lkey_web") === "Unknown" ||
+        col("lkey_web") === "NoMatch"
+    )
     val sourceMMEJoinedDF = TransactionDFOperations.joinWithMME(sourceDFWithoutLkey, locationDF, hdfsPartitions)
     val transWithMMELkeyOtherTables = TransactionDFOperations.joinForLookUps(sourceMMEJoinedDF, magnetDF, deviceDBDF, cspDF, radiusSRCDF)
     val transWithMMELkeyOtherTablesExpanded = TransactionDFOperations.sourceColumnSplit(spark, transWithMMELkeyOtherTables, "WEB")
-
     val transWithMMELkeyOtherTablesExpandedFinal = TransactionDFOperations.getFinalDF(transWithMMELkeyOtherTablesExpanded)
     Utils.writeErichedData(transWithMMELkeyOtherTablesExpandedFinal,enrichPath,errorPath)
+
+    val srcDFWithNoLoc = srcFilteredDF.filter(col("lkey_web") === "NoLocation").
+      withColumn("lkey", lit("1090-79999"))
+    val noLOCKeyOtherTables = TransactionDFOperations.joinNoLOCLookUps(srcDFWithNoLoc, cspDF, radiusSRCDF)
+    val transWithNoLOCKeyExpanded = TransactionDFOperations.sourceColumnSplit(spark,
+      noLOCKeyOtherTables, "WEB")
+    val transWithNoLOCKeyExpandedFinal = TransactionDFOperations.getFinalDFForNoLOC(transWithNoLOCKeyExpanded)
+    Utils.writeErichedData(transWithNoLOCKeyExpandedFinal,enrichPath,errorPath)
 
     if(deleteFlag.equalsIgnoreCase("true")){
       val HbaseConf = HBaseConfiguration.create()

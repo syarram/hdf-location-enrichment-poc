@@ -274,18 +274,23 @@ object TransactionDFOperations {
 
   def enrichContType(df:DataFrame):DataFrame={
     df.withColumn("conttype_tmp1", split(col("contenttype"),"/")(0))
-      .withColumn("conttype_1",
-        when(col("conttype_tmp1").contains("-"),"unknown").
-          when(col("conttype_tmp1").contains(""),"null").
-          when(col("conttype_tmp1").contains("rtmp") || col("conttype_tmp1").contains("video") || col("conttype_tmp1").contains("mpeg"),"Video").
-          when(col("conttype_tmp1").contains("image") || col("conttype_tmp1").contains("img") || col("conttype_tmp1").contains("jpeg"),"Image").
-          when(col("conttype_tmp1").contains("font") || col("conttype_tmp1").contains("application") || col("conttype_tmp1").contains("app") || col("conttype_tmp1").contains("binary"),"Application").
+      .withColumn("conttype_1", when(col("conttype_tmp1") === ("-"),"unknown").
+          when(col("conttype_tmp1") === (""),"null").
+          when(col("conttype_tmp1").contains("rtmp")
+            || col("conttype_tmp1").contains("video")
+            || col("conttype_tmp1").contains("mpeg"),"Video").
+          when(col("conttype_tmp1").contains("image")
+            || col("conttype_tmp1").contains("img")
+            || col("conttype_tmp1").contains("jpeg"),"Image").
+          when(col("conttype_tmp1").contains("font")
+            || col("conttype_tmp1").contains("application")
+            || col("conttype_tmp1").contains("app")
+            || col("conttype_tmp1").contains("binary"),"Application").
           when(col("conttype_tmp1").contains("audio"),"Audio").
           when(col("conttype_tmp1").contains("text"),"Text").
           when(col("conttype_tmp1").contains("raw-data"),"raw-data").otherwise("NULL"))
       .withColumn("conttype_tmp2", split(col("contenttype"),"/")(1)).drop("conttype_tmp1")
-      .withColumn("conttype",
-    when(col("conttype_tmp2").contains("octet-stream"),"octet-stream").
+      .withColumn("conttype", when(col("conttype_tmp2").contains("octet-stream"),"octet-stream").
       when(col("conttype_tmp2").contains("mp4"),"mp4").
       when(col("conttype_tmp2").contains("png"),"png").
       when(col("conttype_tmp2").contains("gif"),"gif").
@@ -302,8 +307,11 @@ object TransactionDFOperations {
       when(col("conttype_tmp2").contains("m4v"),"m4v").
       when(col("conttype_tmp2").contains("asf"),"asf").
       when(col("conttype_tmp2").contains("dash"),"dash").
-      when(col("conttype_tmp2").contains("font") || col("conttype_tmp2").contains("woff") || col("conttype_tmp2").contains("tff") || col("conttype_tmp2").contains("otf") ,"font").
-    when(col("conttype_tmp2").contains("webm"),"webm").
+      when(col("conttype_tmp2").contains("font")
+        || col("conttype_tmp2").contains("woff")
+        || col("conttype_tmp2").contains("tff")
+        || col("conttype_tmp2").contains("otf") ,"font").
+      when(col("conttype_tmp2").contains("webm"),"webm").
       when(col("conttype_tmp2").contains("webp"),"webp").
       when(col("conttype_tmp2").contains("plain"),"plaintext").
       when(col("conttype_tmp2").contains("avi"),"avi").
@@ -315,11 +323,12 @@ object TransactionDFOperations {
       when(col("conttype_tmp2").contains("css"),"css").
       when(col("conttype_tmp2").contains("x-mixed-replace"),"x-mixed-replace").
       when(col("conttype_tmp2").contains("mms-framed"),"mms-framed").
-    when(col("conttype_tmp2").contains("shockwave"),"shockwave-flash").
-    when(col("conttype_tmp2").contains("vnd.android.package-delta"),"vnd.android.package-delta").
-    when(col("conttype_tmp2").contains("vnd.android.package-archive"),"vnd.android.package-archive").
-    when(col("conttype_tmp2").contains("java") || col("conttype_tmp2").contains("js") || col("conttype_tmp2")
-      .contains("json"),"javascript").otherwise("null")
+      when(col("conttype_tmp2").contains("shockwave"),"shockwave-flash").
+      when(col("conttype_tmp2").contains("vnd.android.package-delta"),"vnd.android.package-delta").
+      when(col("conttype_tmp2").contains("vnd.android.package-archive"),"vnd.android.package-archive").
+      when(col("conttype_tmp2").contains("java")
+        || col("conttype_tmp2").contains("js")
+        || col("conttype_tmp2").contains("json"),"javascript").otherwise("null")
       ).drop("conttype_tmp2")
   }
 
@@ -341,12 +350,79 @@ object TransactionDFOperations {
       .withColumn("vslqtyup",lit("Null"))
       .withColumn("vslqtydwn",lit("Null"))
       .withColumn("vslstltncy",lit("Null"))
+
       .withColumn("generation",when(df("generation").isNull,"LNF").otherwise(df("generation")))
+      .withColumn("manufacturer",when(df("manufacturer").isNull,"mgdnd").otherwise(df("manufacturer")))
+      .withColumn("postcode",when(df("postcode").isNull,"mgdnd").otherwise(df("postcode")))
+      .withColumn("ant_height",when(df("ant_height").isNull,"mgdnd").otherwise(df("ant_height")))
+      .withColumn("ground_height",when(df("ground_height").isNull,"mgdnd").otherwise(df("ground_height")))
+      .withColumn("marketing_name",when(df("marketing_name").isNull,"ddnd").otherwise(df("marketing_name")))
+      .withColumn("brand_name",when(df("brand_name").isNull,"ddnd").otherwise(df("brand_name")))
+      .withColumn("model_name",when(df("model_name").isNull,"ddnd").otherwise(df("model_name")))
+      .withColumn("operating_system",when(df("operating_system").isNull,"ddnd").otherwise(df("operating_system")))
+      .withColumn("device_type",when(df("device_type").isNull,"ddnd").otherwise(df("device_type")))
+      .withColumn("offering",when(df("offering").isNull,"ddnd").otherwise(df("offering")))
+
       .withColumn("apnid",regexp_replace(col("apnid"), "  ","<TAB>"))
       .withColumn("csp",when(df("csp").isNull,"other").otherwise(df("csp")))
     val tgtExpr = TargetCatalog.TargetExpr
     missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
   }
+
+  /**
+   * This method add all missing columns to null value
+   * @param df
+   * @return
+   */
+  def getFinalDFForNoLOC(df:DataFrame):DataFrame={
+    val missingColumnsDF = df.withColumn("calc_1",lit("Null"))
+      .withColumn("calc_2",lit("-"))
+      .withColumn("calc_3",lit("-"))
+      .withColumn("calc_4",lit("-"))
+      .withColumn("calc_5",lit("-"))
+      .withColumn("vslsessinb",lit("Null"))
+      .withColumn("vslsessoutb",lit("Null"))
+      .withColumn("vslstalldur",lit("Null"))
+      .withColumn("vslstalltme",lit("Null"))
+      .withColumn("vslqtyup",lit("Null"))
+      .withColumn("vslqtydwn",lit("Null"))
+      .withColumn("vslstltncy",lit("Null"))
+
+      .withColumn("csr",lit(""))
+      .withColumn("cell_id",lit(""))
+      .withColumn("sector",lit(""))
+      .withColumn("generation",lit("LNF"))
+      .withColumn("manufacturer",lit("mgdnd"))
+      .withColumn("lacod",lit(""))
+      .withColumn("postcode",lit("mgdnd"))
+      .withColumn("easting",lit(""))
+      .withColumn("northing",lit(""))
+      .withColumn("sac",lit(""))
+      .withColumn("rac",lit(""))
+      .withColumn("ant_height",lit("mgdnd"))
+      .withColumn("ground_height",lit("mgdnd"))
+      .withColumn("tilt",lit(""))
+      .withColumn("elec_tilt",lit(""))
+      .withColumn("azimuth",lit(""))
+      .withColumn("enodeb_id",lit(""))
+      .withColumn("tac",lit(""))
+      .withColumn("ura",lit(""))
+      .withColumn("imsi",lit(""))
+      .withColumn("imeisv",lit(""))
+      .withColumn("marketing_name",lit("ddnd"))
+      .withColumn("brand_name",lit("ddnd"))
+      .withColumn("model_name",lit("ddnd"))
+      .withColumn("operating_system",lit("ddnd"))
+      .withColumn("device_type",lit("ddnd"))
+      .withColumn("offering",lit("ddnd"))
+
+      .withColumn("apnid",regexp_replace(col("apnid"), "  ","<TAB>"))
+      .withColumn("csp",when(df("csp").isNull,"other").otherwise(df("csp")))
+    val tgtExpr = TargetCatalog.TargetExpr
+    missingColumnsDF.select(tgtExpr.head, tgtExpr.tail:_*)
+  }
+
+
 
   /**
    * This method joins magnet, devicedb, csp, radius data to web transactions and returns enriched dataframe.
@@ -368,6 +444,14 @@ object TransactionDFOperations {
       .withColumnRenamed("userid_web","emsisdn")
   }
 
+  def joinNoLOCLookUps(trasactionDF: DataFrame, cspDF: DataFrame, radiusSRCDF: DataFrame): DataFrame = {
+    trasactionDF
+      .join(broadcast(cspDF),trasactionDF("clientip")===cspDF("ip"),"left").drop(cspDF("ip"))
+      .join(radiusSRCDF,trasactionDF("sessionid")===radiusSRCDF("sesID") &&
+        trasactionDF("time_web")>=radiusSRCDF("ts"),"left")
+      .drop("rank","rkey","sesID")
+      .withColumnRenamed("userid_web","emsisdn")
+  }
   /**
    * This Method joins web transactions to mme data and returns enriched dataframe.
    * @param sourceDFWithoutLkey

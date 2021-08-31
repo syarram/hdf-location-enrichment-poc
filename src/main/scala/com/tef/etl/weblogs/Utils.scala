@@ -203,14 +203,15 @@ object Utils {
   }
 
   def writeErichedData(df:DataFrame,enrichPath:String,errorPath:String): Unit ={
+    val cachedDf = df.cache()
     if("none".equalsIgnoreCase(errorPath)){
-      writeLZOCSV(df.drop("yr"),enrichPath)
+      writeLZOCSV(cachedDf.drop("yr"),enrichPath)
     }else {
       import org.apache.spark.sql.functions._
-      val enrichDF = df.filter(col("yr") > 2020 && col("yr") < 2300).drop("yr")
+      val enrichDF = cachedDf.filter(col("yr") > 2020 && col("yr") < 2300).drop("yr")
       writeLZOCSV(enrichDF,enrichPath)
 
-      val errorDF = df.filter(col("yr") <= 2020 || col("yr") >= 2300)
+      val errorDF = cachedDf.filter(col("yr") <= 2020 || col("yr") >= 2300)
         .drop("yr")
         .withColumn("dt",date_format(current_date,"yyyyMMdd"))
         .withColumn("hour",date_format(current_timestamp,"HH"))
