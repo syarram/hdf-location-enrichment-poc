@@ -40,6 +40,8 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val controlTable = args(10)
     val dateLimit = args(11)
     val deleteFlag = args(12)
+    val filterByBatchProcessTime = args(13)
+
 
     val logger = LoggerFactory.getLogger(WebIpfrBatchEnrich.getClass)
 
@@ -59,6 +61,7 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     logger.info(s"controlTable=>$controlTable")
     logger.info(s"dateLimit=>$dateLimit")
     logger.info(s"deleteFlag=>$deleteFlag")
+    logger.info(s"filterByBatchProcessTime=>$filterByBatchProcessTime")
     logger.info("*********************Argument/Variables*************************************")
 
     import spark.implicits._
@@ -79,10 +82,15 @@ object WebIpfrBatchEnrich extends SparkSessionTrait {
     val controlCatalog = HBaseCatalogs.controlCatalog("\"" + controlTable + "\"")
     val controlDF = Utils.reader(format, controlCatalog)(spark).cache()
     val streamProccessedTimeVal = Utils.colValFromDF(controlDF, "weblogs_stream_processed_ts")(spark)
+    val batchProccessedTimeVal = Utils.colValFromDF(controlDF, "weblogs_batch_processed_ts")(spark)
+
 
     val webCatalog = HBaseCatalogs.stagewebcatalog("\"" + transactionTable + "\"")
     val sourceDF = (Utils.reader(format, webCatalog)(spark))
-    val sourceDFFiltered = sourceDF.filter(col("time_web") <= streamProccessedTimeVal).repartition(hdfsPartitions).cache()
+    val sourceDFFiltered = if(filterByBatchProcessTime.equalsIgnoreCase("true"))
+     sourceDF.filter((col("time_web") <= streamProccessedTimeVal) && (col("time_web") > batchProccessedTimeVal)).repartition(hdfsPartitions).cache()
+     else
+      sourceDF.filter(col("time_web") <= streamProccessedTimeVal).repartition(hdfsPartitions).cache()
 
     val webCount = sourceDFFiltered.count()
 
