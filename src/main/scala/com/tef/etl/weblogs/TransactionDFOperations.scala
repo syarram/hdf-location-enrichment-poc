@@ -275,7 +275,6 @@ object TransactionDFOperations {
   def enrichContType(df:DataFrame):DataFrame={
     df.withColumn("conttype_tmp1", split(col("contenttype"),"/")(0))
       .withColumn("conttype_1", when(col("conttype_tmp1") === ("-"),"unknown").
-          when(col("conttype_tmp1") === (""),"null").
           when(col("conttype_tmp1").contains("rtmp")
             || col("conttype_tmp1").contains("video")
             || col("conttype_tmp1").contains("mpeg"),"Video").
@@ -288,9 +287,12 @@ object TransactionDFOperations {
             || col("conttype_tmp1").contains("binary"),"Application").
           when(col("conttype_tmp1").contains("audio"),"Audio").
           when(col("conttype_tmp1").contains("text"),"Text").
-          when(col("conttype_tmp1").contains("raw-data"),"raw-data").otherwise("NULL"))
+          when(col("conttype_tmp1").contains("raw-data"),"raw-data").otherwise(""))
+
       .withColumn("conttype_tmp2", split(col("contenttype"),"/")(1)).drop("conttype_tmp1")
-      .withColumn("conttype", when(col("conttype_tmp2").contains("octet-stream"),"octet-stream").
+
+      .withColumn("conttype",
+      when(col("conttype_tmp2").contains("octet-stream"),"octet-stream").
       when(col("conttype_tmp2").contains("mp4"),"mp4").
       when(col("conttype_tmp2").contains("png"),"png").
       when(col("conttype_tmp2").contains("gif"),"gif").
@@ -328,7 +330,13 @@ object TransactionDFOperations {
       when(col("conttype_tmp2").contains("vnd.android.package-archive"),"vnd.android.package-archive").
       when(col("conttype_tmp2").contains("java")
         || col("conttype_tmp2").contains("js")
-        || col("conttype_tmp2").contains("json"),"javascript").otherwise("null")
+        || col("conttype_tmp2").contains("json"),"javascript").
+      when(col("conttype_tmp2").contains("jpeg")
+        || col("conttype_tmp2").contains("jpg"),"jpeg").
+      when(col("conttype_tmp2").contains("mp2t")
+          || col("conttype_tmp2").contains("ts"),"MP2T").
+      when(col("conttype_tmp2")==="","error_empty").
+      when(col("conttype_tmp2")==="NULL","error_null").otherwise("")
       ).drop("conttype_tmp2")
   }
 
